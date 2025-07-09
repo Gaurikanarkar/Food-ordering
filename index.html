@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Food Website</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css" integrity="sha512-KfkfwYDsLkIlwQp6LFnl8zNdLGxu9YAA1QvwINks4PhcElQSvqcyVLLD9aMhXd13uQjoXtEKNosOWaZqXgel0g==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+
+    <section id="Home">
+        <nav>
+            <div class="logo">
+                <img src="image/logo.png">
+            </div>
+
+            <ul>
+                <li><a href="#Home">Home</a></li>
+                <li><a href="#About">About</a></li>
+                <li><a href="#Menu">Menu</a></li>
+                <li><a href="#Gallary">Gallary</a></li>
+                <li><a href="#Review">Review</a></li>
+                <li><a href="#Order">Order</a></li>
+            </ul>
+
+            <div class="icon">
+                <i class="fa-solid fa-magnifying-glass"></i>
+                <i class="fa-solid fa-heart"></i>
+                <i class="fa-solid fa-cart-shopping" id="cart-icon"></i>
+                <span id="cart-count">0</span>
+            </div>
+        </nav>
+
+        <div class="main">
+            <div class="men_text">
+                <h1>Get Fresh<span>Food</span><br>in a Easy Way</h1>
+            </div>
+            <div class="main_image">
+                <img src="image/main_img.png">
+            </div>
+        </div>
+
+        <p>
+            At Fresh Bites, we bring you delicious, freshly made meals that are packed with flavor and crafted with the finest ingredients. Whether you crave a hearty breakfast, a quick lunch, or a satisfying dinner, we have something for everyone.
+
+            Our chefs carefully select farm-fresh vegetables, premium meats, and organic spices to ensure every bite is full of taste and nutrition. From classic comfort foods to exciting new flavors, our menu is designed to cater to all food lovers.
+        </p>
+
+        <div class="main_btn">
+            <a href="#">Order Now</a>
+            <i class="fa-solid fa-angle-right"></i>
+        </div>
+    </section>
+
+    <!-- Menu Section -->
+    <div class="menu" id="Menu">
+        <h1>Our<span>Menu</span></h1>
+
+        <!-- Cart Section -->
+        <div id="Cart" class="cart">
+            <h3>Cart Items</h3>
+            <div class="cart_items"></div>
+            
+            <div>
+                <span>Total: ₹</span><span id="cart_total_amount">0.00</span>
+            </div>
+            <button class="cart_checkout_btn">Checkout</button>
+        </div>
+
+        <div class="menu_box">
+            <div class="menu_card">
+                <div class="menu_image">
+                    <img src="image/buger.jpg">
+                </div>
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+                <div class="menu_info">
+                    <h2>Burger</h2>
+                    <p>
+                        🍔 A delicious, juicy burger loaded with fresh lettuce, tomatoes, cheese, and a perfectly grilled patty, served with crispy fries.
+                    </p>
+                    <h3>₹150.0</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="Burger" data-price="150">Order Now</button>
+                </div>
+            </div>
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/pasta.jpg">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>pasta</h2>
+                    <p>
+                        🍝 A delightful plate of pasta tossed in a rich, flavorful tomato sauce with herbs, cheese, and fresh vegetables.
+                    </p>
+                    <h3>₹100.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="pasta" data-price="100">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/lasagna.webp">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>lasagna</h2>
+                    <p>
+                        🧀 Layers of pasta, rich meat sauce, creamy béchamel, and melted cheese baked to perfection for an irresistible taste.
+                    </p>
+                    <h3>₹200.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="lasagna" data-price="150">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/chocolate_Drink.jpg">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>Drink</h2>
+                    <p>
+                        🥤 A refreshing and creamy chocolate shake made with rich cocoa, fresh milk, and a touch of sweetness.
+                    </p>
+                    <h3>₹40.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="Drink" data-price="40">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/pizza.jpg">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>pizza</h2>
+                    <p>
+                        🍕 A classic Italian-style pizza topped with fresh veggies, cheese, and a flavorful tomato sauce on a crispy crust.
+                    </p>
+                    <h3>₹150.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="p1" data-price="150">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/Hot_dog.jpg">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>Hot Dog</h2>
+                    <p>
+                        🌭 A soft bun filled with a juicy grilled sausage, topped with mustard, ketchup, and crunchy onions for the perfect bite.
+                    </p>
+                    <h3>₹150.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="Hot Dog" data-price="150">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/juse.jpg">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>Juse</h2>
+                    <p>
+                        🥤 A refreshing blend of tropical fruits, served chilled with ice and garnished with fresh fruit slices.
+                    
+                    </p>
+                    <h3>₹50.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="juse" data-price="50">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/biryani.webp">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>Biryani</h2>
+                    <p>
+                        🍛 A fragrant and flavorful rice dish cooked with marinated chicken, aromatic spices, and herbs, served hot.
+                    </p>
+                    <h3>₹120.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="Biryani" data-price="120">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/chocolate.jpg">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>Chocolate</h2>
+                    <p>
+                        🍫 A selection of rich, creamy chocolate bites with a smooth filling and a delicious cocoa flavor.
+                    </p>
+                    <h3>₹20.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="Chocolate" data-price="20">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/ice_cream.jpg">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>Ice Cream</h2>
+                    <p>
+                        🍨 A scoop of refreshing, creamy ice cream made with natural ingredients and topped with fresh berries.
+                    </p>
+                    <h3>₹60.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="Ice Cream" data-price="60">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/Spanchi.jpg">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>Spanchi</h2>
+                    <p>
+                        🧁 A soft and fluffy chocolate chip muffin with a golden crust, perfect for a sweet treat
+                    </p>
+                    <h3>₹80.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="Spanchi" data-price="80">Order Now</button>
+                </div>
+
+            </div> 
+
+            <div class="menu_card">
+
+                <div class="menu_image">
+                    <img src="image/sandwich.jpg">
+                </div>
+
+                <div class="small_card">
+                    <i class="fa-solid fa-heart"></i>
+                </div>
+
+                <div class="menu_info">
+                    <h2>Sandwich</h2>
+                    <p>
+                        🥪 A fresh and healthy sandwich filled with layers of crispy vegetables, cheese, and tangy sauces on toasted bread.
+                    </p>
+                    <h3>₹70.00</h3>
+                    <div class="menu_icon">
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star"></i>
+                        <i class="fa-solid fa-star-half-stroke"></i>
+                    </div>
+                    <button class="menu_btn" data-name="Sandwich" data-price="70">Order Now</button>
+                </div>
+
+            </div> 
+            
+        </div>
+
+    </div>
+
+
+            <!-- Repeat for other menu items -->
+            <div class="gallary" id="Gallary">
+                <h1>Our<span>Gallary</span></h1>
+        
+                <div class="gallary_image_box">
+                    <div class="gallary_image">
+                        <img src="image/gallary_1.jpg">
+        
+                        <h3>Food</h3>
+                        <p>
+                            🥪 A delicious multi-layered club sandwich made with toasted bread, fresh lettuce, tomatoes, cheese, and crispy fillings, served with a side of fries.
+                        </p>
+                        <a href="#" class="gallary_btn">Order Now</a>
+                        <!-- <button class="gallary_btn" data-name="Food" data-price="150">Order Now</button> -->
+                    </div>
+        
+                    <div class="gallary_image">
+                        <img src="image/gallary_2.jpg">
+        
+                        <h3>Food</h3>
+                        <p>
+                            🧁 Elegant cupcakes topped with smooth blue frosting, beautifully decorated with edible flowers, making them a perfect dessert choice.
+
+
+                        </p>
+                        <a href="#" class="gallary_btn">Order Now</a>
+                    </div>
+        
+                    <div class="gallary_image">
+                        <img src="image/gallary_3.jpg">
+        
+                        <h3>Food</h3>
+                        <p>
+                            🍫 Rich and moist chocolate cupcakes with creamy chocolate frosting, topped with chocolate chips for a decadent treat.
+                        </p>
+                        <a href="#" class="gallary_btn">Order Now</a>
+                    </div>
+        
+                    <div class="gallary_image">
+                        <img src="image/gallary_4.jpg">
+        
+                        <h3>Food</h3>
+                        <p>
+                            🍞 A healthy and wholesome loaf of blueberry oat bread, packed with fresh blueberries and crunchy granola, ideal for a nutritious breakfast or snack.
+                        </p>
+                        <a href="#" class="gallary_btn">Order Now</a>
+                    </div>
+        
+                    <div class="gallary_image">
+                        <img src="image/gallary_5.jpg">
+        
+                        <h3>Food</h3>
+                        <p>
+                            🍕 A freshly baked vegetable pizza topped with olives, onions, bell peppers, tomatoes, and melted cheese, served on a wooden platter.
+                        </p>
+                        <a href="#" class="gallary_btn">Order Now</a>
+                    </div>
+        
+                    <div class="gallary_image">
+                        <img src="image/gallary_6.jpg">
+        
+                        <h3>Food</h3>
+                        <p>
+                            🍰 A rich and indulgent cake layered with creamy peanut butter frosting, topped with fresh berries like strawberries, blueberries, and cherries for a perfect combination of sweetness and crunch.
+                        </p>
+                        <a href="#" class="gallary_btn">Order Now</a>
+                    </div>
+        
+                </div>
+        
+            </div>
+        
+        
+        
+        
+            <!--Review-->
+        
+            <div class="review" id="Review">
+                <h1>Customer<span>Review</span></h1>
+        
+                <div class="review_box">
+                    <div class="review_card">
+        
+                        <div class="review_profile">
+                            <img src="image/review_1.png">
+                        </div>
+        
+                        <div class="review_text">
+                            <h2 class="name">Ovi Joshi</h2>
+        
+                            <div class="review_icon">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            </div>
+        
+                            <div class="review_social">
+                                <i class="fa-brands fa-facebook-f"></i>
+                                <i class="fa-brands fa-instagram"></i>
+                                <i class="fa-brands fa-twitter"></i>
+                                <i class="fa-brands fa-linkedin-in"></i>
+                            </div>
+                            <p>
+                                "As a food enthusiast, I always look for quality and freshness. This service exceeded my expectations with its delicious meals, quick delivery, and amazing customer support. Highly recommended!"
+
+
+                            </p>
+        
+                        </div>
+        
+                    </div>
+        
+                    <div class="review_card">
+        
+                        <div class="review_profile">
+                            <img src="image/review_2.png">
+                        </div>
+        
+                        <div class="review_text">
+                            <h2 class="name">Dev Shastri</h2>
+        
+                            <div class="review_icon">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            </div>
+        
+                            <div class="review_social">
+                                <i class="fa-brands fa-facebook-f"></i>
+                                <i class="fa-brands fa-instagram"></i>
+                                <i class="fa-brands fa-twitter"></i>
+                                <i class="fa-brands fa-linkedin-in"></i>
+                            </div>
+        
+                            <p>
+                                "The variety of options and the attention to detail in every dish make this my go-to place for ordering food. The flavors are rich, and the ingredients taste incredibly fresh every time!"
+                            </p>
+        
+                        </div>
+        
+                    </div>
+        
+                    <div class="review_card">
+        
+                        <div class="review_profile">
+                            <img src="image/review_3.png">
+                        </div>
+        
+                        <div class="review_text">
+                            <h2 class="name">Apurva Singhaniya</h2>
+        
+                            <div class="review_icon">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            </div>
+        
+                            <div class="review_social">
+                                <i class="fa-brands fa-facebook-f"></i>
+                                <i class="fa-brands fa-instagram"></i>
+                                <i class="fa-brands fa-twitter"></i>
+                                <i class="fa-brands fa-linkedin-in"></i>
+                            </div>
+        
+                            <p>
+                                "I absolutely love the experience! The food is always hot, tasty, and well-packaged. Whether it’s a quick snack or a full meal, they never disappoint. Five stars!"
+
+
+                            </p>
+        
+                        </div>
+        
+                    </div>
+        
+                    <div class="review_card">
+        
+                        <div class="review_profile">
+                            <img src="image/review_4.png">
+                        </div>
+        
+                        <div class="review_text">
+                            <h2 class="name">Arnav Surve</h2>
+        
+                            <div class="review_icon">
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star"></i>
+                                <i class="fa-solid fa-star-half-stroke"></i>
+                            </div>
+        
+                            <div class="review_social">
+                                <i class="fa-brands fa-facebook-f"></i>
+                                <i class="fa-brands fa-instagram"></i>
+                                <i class="fa-brands fa-twitter"></i>
+                                <i class="fa-brands fa-linkedin-in"></i>
+                            </div>
+        
+                            <p>
+                                "Great food, prompt service, and excellent presentation. I’ve been a regular customer, and the quality remains consistent. This is definitely one of the best places to order from!"
+
+
+                            </p>
+        
+                        </div>
+        
+                    </div>
+        
+                </div>
+        
+            </div>
+        
+        
+        
+            <!--Order-->
+        
+            <div class="order" id="Order">
+                <h1><span>Order</span>Now</h1>
+        
+                <div class="order_main">
+        
+                    <div class="order_image">
+                        <img src="image/order_image.png">
+                    </div>
+        
+                    <form action="#">
+        
+                        <div class="input">
+                            <p>Name</p>
+                            <input type="text" placeholder="you name">
+                        </div>
+        
+                        <div class="input">
+                            <p>Email</p>
+                            <input type="email" placeholder="you email">
+                        </div>
+        
+                        <div class="input">
+                            <p>Number</p>
+                            <input placeholder="you number">
+                        </div>
+        
+                        <div class="input">
+                            <p>How Much</p>
+                            <input type="number" placeholder="how many order">
+                        </div>
+        
+                        <div class="input">
+                            <p>You Order</p>
+                            <input placeholder="food name">
+                        </div>
+        
+                        <div class="input">
+                            <p>Address</p>
+                            <input placeholder="you Address">
+                        </div>
+        
+                        <a href="#" class="order_btn">Order Now</a>
+        
+                    </form>
+        
+                </div>
+        
+            </div>
+            <!--Team-->
+
+    <div class="team">
+        <h1>Our<span>Team</span></h1>
+
+        <div class="team_box">
+            <div class="profile">
+                <img src="image/chef1.png">
+
+                <div class="info">
+                    <h2 class="name">Chef</h2>
+                    <p class="bio">A passionate culinary expert known for crafting exquisite dishes with fresh.</p>
+
+                    <div class="team_icon">
+                        <i class="fa-brands fa-facebook-f"></i>
+                        <i class="fa-brands fa-twitter"></i>
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="profile">
+                <img src="image/chef2.png">
+
+                <div class="info">
+                    <h2 class="name">Chef</h2>
+                    <p class="bio">An experienced chef with a deep understanding of Italian and Mediterranean cuisine.</p>
+
+                    <div class="team_icon">
+                        <i class="fa-brands fa-facebook-f"></i>
+                        <i class="fa-brands fa-twitter"></i>
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="profile">
+                <img src="image/chef3.jpg">
+
+                <div class="info">
+                    <h2 class="name">Chef</h2>
+                    <p class="bio">A creative and passionate chef known for his vibrant personality and bold flavors.</p>
+
+                    <div class="team_icon">
+                        <i class="fa-brands fa-facebook-f"></i>
+                        <i class="fa-brands fa-twitter"></i>
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <div class="profile">
+                <img src="image/chef4.jpg">
+
+                <div class="info">
+                    <h2 class="name">Chef</h2>
+                    <p class="bio">A skilled and dedicated chef with a love for traditional recipes and modern twists.</p>
+
+                    <div class="team_icon">
+                        <i class="fa-brands fa-facebook-f"></i>
+                        <i class="fa-brands fa-twitter"></i>
+                        <i class="fa-brands fa-instagram"></i>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+        
+        
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="modal" >
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Payment</h2>
+            <form id="paymentForm" >
+                <div class="form-group">
+                    <label for="name">Name:</label>
+                    <input type="text" id="name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="address">Address:</label>
+                    <input type="text" id="address" name="address" required>
+                </div>
+                <div class="form-group">
+                    <label for="paymentMethod">Payment Method:</label>
+                    <select id="paymentMethod" name="paymentMethod" required>
+                        <option value="creditCard">Credit Card</option>
+                        <option value="debitCard">Debit Card</option>
+                        <option value="upi">UPI</option>
+                        <option value="cashOnDelivery">Cash on Delivery</option>
+                    </select>
+                </div>
+                <div id="billDetails">
+                    <!-- Bill details will be dynamically added here -->
+                </div>
+                <button type="submit" id="makePaymentBtn" >Make Payment</button>
+            </form>
+        </div>
+    </div>
+    <!-- Add this Receipt Modal after Payment Modal -->
+<div id="receiptModal" class="modal">
+    <div class="modal-content receipt-content">
+        <span class="close-modal" onclick="closeReceipt()">&times;</span>
+        <div id="receipt">
+            <div class="receipt-header">
+                <img src="image/logo.png" class="receipt-logo">
+                <h2>Foodie Restaurant</h2>
+                <p>123 Main Street, City</p>
+                <p>Phone: 987-654-3210</p>
+                <p>GSTIN: 07ABCDE1234F1Z5</p>
+            </div>
+            
+            <div class="receipt-body">
+                <div class="receipt-section">
+                    <h3>Customer Details</h3>
+                    <p id="receipt-name">Name: </p>
+                    <p id="receipt-address">Address: </p>
+                    <p id="receipt-date">Date: </p>
+                </div>
+                
+                <div class="receipt-section">
+                    <h3>Order Summary</h3>
+                    <table id="receipt-items">
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Qty</th>
+                                <th>Price</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Items will be added here -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="receipt-total">
+                    <p>Total: ₹<span id="receipt-total-amount">0.00</span></p>
+                    <p>Payment Method: <span id="receipt-payment-method"></span></p>
+                </div>
+            </div>
+            
+            <div class="receipt-footer">
+                <p>Thank you for your order!</p>
+                <p>** This is a computer generated bill **</p>
+            </div>
+        </div>
+        <button onclick="printReceipt()" class="print-btn">Print Receipt</button>
+    </div>
+</div>
+
+    <!-- Footer Section -->
+    <footer>
+        <div class="footer_main">
+            <div class="footer_tag">
+                <h2>Location</h2>
+                <p>Sri Lanka</p>
+                <p>USA</p>
+                <p>India</p>
+                <p>Japan</p>
+                <p>Italy</p>
+            </div>
+            <div class="footer_tag">
+                <h2>Quick Link</h2>
+                <p>Home</p>
+                <p>About</p>
+                <p>Menu</p>
+                <p>Gallary</p>
+                <p>Order</p>
+            </div>
+            <div class="footer_tag">
+                <h2>Contact</h2>
+                <p>+94 12 3456 789</p>
+                <p>+94 25 5568456</p>
+                <p>johndeo123@gmail.com</p>
+                <p>foodshop123@gmail.com</p>
+            </div>
+            <div class="footer_tag">
+                <h2>Our Service</h2>
+                <p>Fast Delivery</p>
+                <p>Easy Payments</p>
+                <p>24 x 7 Service</p>
+            </div>
+            <div class="footer_tag">
+                <h2>Follows</h2>
+                <i class="fa-brands fa-facebook-f"></i>
+                <i class="fa-brands fa-twitter"></i>
+                <i class="fa-brands fa-instagram"></i>
+                <i class="fa-brands fa-linkedin-in"></i>
+            </div>
+        </div>
+        <p class="end">Design by<span><i class="fa-solid fa-face-grin"></i>Piyush</span></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
