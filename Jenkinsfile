@@ -64,18 +64,16 @@ spec:
         }
 
         stage('Build Docker Image') {
-    steps {
-        container('dind') {
-            withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKERHUB_USER', passwordVariable: 'DOCKERHUB_PASS')]) {
-                sh '''
-                    echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-                    sleep 10
-                    docker build -t food-ordering:latest .
-                '''
+            steps {
+                container('dind') {
+                    sh '''
+                        echo "Building Docker image..."
+                        docker version
+                        docker build -t food-ordering:latest .
+                    '''
+                }
             }
         }
-    }
-}
 
         stage('SonarQube Analysis') {
             steps {
@@ -94,10 +92,16 @@ spec:
         stage('Login to Nexus Registry') {
             steps {
                 container('dind') {
-                    sh '''
-                        docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
-                          -u admin -p Changeme@2025
-                    '''
+                    withCredentials([usernamePassword(
+                        credentialsId: 'nexus-docker-creds',   // 👈 must exist in Jenkins
+                        usernameVariable: 'REG_USER',
+                        passwordVariable: 'REG_PASS'
+                    )]) {
+                        sh '''
+                            echo "$REG_PASS" | docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
+                              -u "$REG_USER" --password-stdin
+                        '''
+                    }
                 }
             }
         }
@@ -113,9 +117,6 @@ spec:
             }
         }
 
-        /* -------------------------
-           CREATE NAMESPACE STAGE
-           ------------------------- */
         stage('Create Namespace') {
             steps {
                 container('kubectl') {
