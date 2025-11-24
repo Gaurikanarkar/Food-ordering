@@ -79,7 +79,7 @@ spec:
                 container('sonar-scanner') {
                     sh '''
                         sonar-scanner \
-                          -Dsonar.projectKey=2401086-food\
+                          -Dsonar.projectKey=2401086-food \
                           -Dsonar.sources=. \
                           -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
                           -Dsonar.login=sqp_d73b3fdb83e56c241ab9b68c77acb1285f33ec3b
@@ -105,6 +105,21 @@ spec:
                     sh '''
                         docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
                         docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
+                    '''
+                }
+            }
+        }
+
+        /* -------------------------
+           CREATE NAMESPACE STAGE
+           ------------------------- */
+        stage('Create Namespace') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "Creating namespace 2401086 if not exists..."
+                        kubectl create namespace 2401086 || echo "Namespace already exists"
+                        kubectl get ns
                     '''
                 }
             }
@@ -141,5 +156,6 @@ spec:
                 }
             }
         }
+
     }
 }
