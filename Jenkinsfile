@@ -93,7 +93,7 @@ spec:
             steps {
                 container('dind') {
                     withCredentials([usernamePassword(
-                        credentialsId: 'nexus-docker-creds',   // 👈 must exist in Jenkins
+                        credentialsId: 'dockerhub-creds',   // 👈 must exist in Jenkins
                         usernameVariable: 'REG_USER',
                         passwordVariable: 'REG_PASS'
                     )]) {
