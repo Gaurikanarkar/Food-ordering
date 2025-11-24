@@ -67,8 +67,25 @@ spec:
             steps {
                 container('dind') {
                     sh '''
+                        echo "Waiting for Docker daemon to be ready..."
+
+                        # Try for ~60 seconds
+                        for i in {1..30}; do
+                          if docker info >/dev/null 2>&1; then
+                            echo "✅ Docker daemon is ready"
+                            break
+                          fi
+                          echo "⏳ Docker not ready yet, retrying in 2s... ($i/30)"
+                          sleep 2
+                        done
+
+                        # Final check – if still not ready, fail clearly
+                        if ! docker info >/dev/null 2>&1; then
+                          echo "❌ Docker daemon is still not reachable. Failing build."
+                          exit 1
+                        fi
+
                         echo "Building Docker image..."
-                        docker version
                         docker build -t food-ordering:latest .
                     '''
                 }
@@ -93,7 +110,7 @@ spec:
             steps {
                 container('dind') {
                     withCredentials([usernamePassword(
-                        credentialsId: 'dockerhub-creds',   // 👈 must exist in Jenkins
+                        credentialsId: 'nexus-docker-creds',   // Jenkins credential
                         usernameVariable: 'REG_USER',
                         passwordVariable: 'REG_PASS'
                     )]) {
@@ -129,37 +146,4 @@ spec:
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                container('kubectl') {
-                    sh '''
-                        set -x
-                        ls -la
-                        ls -la k8s
-
-                        kubectl apply -f k8s/deployment.yaml -n 2401086
-                        kubectl apply -f k8s/service.yaml -n 2401086
-
-                        kubectl get all -n 2401086
-                        kubectl rollout status deployment/food-ordering-deployment -n 2401086
-                    '''
-                }
-            }
-        }
-
-        stage('Debug Pods') {
-            steps {
-                container('kubectl') {
-                    sh '''
-                        echo "[DEBUG] Listing Pods..."
-                        kubectl get pods -n 2401086
-
-                        echo "[DEBUG] Describing Pods..."
-                        kubectl describe pods -n 2401086 | head -n 200
-                    '''
-                }
-            }
-        }
-
-    }
-}
+        stage('Deploy
