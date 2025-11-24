@@ -1,12 +1,11 @@
 pipeline {
     agent {
         kubernetes {
-            yaml '''
+            yaml """
 apiVersion: v1
 kind: Pod
 spec:
   containers:
-
   - name: node
     image: node:18
     command: ['cat']
@@ -34,7 +33,9 @@ spec:
 
   - name: dind
     image: docker:dind
-    args: ["--storage-driver=overlay2", "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"]
+    args:
+      - "--storage-driver=overlay2"
+      - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     securityContext:
       privileged: true
     env:
@@ -45,7 +46,7 @@ spec:
   - name: kubeconfig-secret
     secret:
       secretName: kubeconfig-secret
-'''
+"""
         }
     }
 
@@ -70,18 +71,18 @@ spec:
                         echo "Waiting for Docker daemon to be ready..."
 
                         # Try for ~60 seconds
-                        for i in {1..30}; do
+                        for i in $(seq 1 30); do
                           if docker info >/dev/null 2>&1; then
-                            echo "✅ Docker daemon is ready"
+                            echo "Docker daemon is ready"
                             break
                           fi
-                          echo "⏳ Docker not ready yet, retrying in 2s... ($i/30)"
+                          echo "Docker not ready yet, retrying in 2s... ($i/30)"
                           sleep 2
                         done
 
                         # Final check – if still not ready, fail clearly
                         if ! docker info >/dev/null 2>&1; then
-                          echo "❌ Docker daemon is still not reachable. Failing build."
+                          echo "Docker daemon is still not reachable. Failing build."
                           exit 1
                         fi
 
@@ -110,7 +111,7 @@ spec:
             steps {
                 container('dind') {
                     withCredentials([usernamePassword(
-                        credentialsId: 'nexus-docker-creds',   // Jenkins credential
+                        credentialsId: 'nexus-docker-creds',
                         usernameVariable: 'REG_USER',
                         passwordVariable: 'REG_PASS'
                     )]) {
@@ -146,4 +147,37 @@ spec:
             }
         }
 
-        stage('Deploy
+        stage('Deploy to Kubernetes') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        set -x
+                        ls -la
+                        ls -la k8s
+
+                        kubectl apply -f k8s/deployment.yaml -n 2401086
+                        kubectl apply -f k8s/service.yaml -n 2401086
+
+                        kubectl get all -n 2401086
+                        kubectl rollout status deployment/food-ordering-deployment -n 2401086
+                    '''
+                }
+            }
+        }
+
+        stage('Debug Pods') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "[DEBUG] Listing Pods..."
+                        kubectl get pods -n 2401086
+
+                        echo "[DEBUG] Describing Pods..."
+                        kubectl describe pods -n 2401086 | head -n 200
+                    '''
+                }
+            }
+        }
+
+    }
+}
