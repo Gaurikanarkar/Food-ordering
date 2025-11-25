@@ -86,7 +86,7 @@ spec:
                             -Dsonar.projectKey=2401086-food \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                            -Dsonar.login=sqp_e5eafae11fc3f0cf3bd677e0763b65e45bd69a6d
+                            -Dsonar.login=sqp_d73b3fdb83e56c241ab9b68c77acb1285f33ec3b
                     '''
                 }
             }
