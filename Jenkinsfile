@@ -63,31 +63,43 @@ spec:
             }
         }
 
-      stage('Build Docker Image') {
-    steps {
-        container('dind') {
-            sh '''
-                echo "Waiting for Docker daemon..."
-                sleep 10
+        stage('Build Docker Image') {
+            steps {
+                container('dind') {
+                    withCredentials([
+                        usernamePassword(
+                            credentialsId: 'dockerhub-creds',
+                            usernameVariable: 'DOCKERHUB_USER',
+                            passwordVariable: 'DOCKERHUB_PASS'
+                        )
+                    ]) {
+                        sh '''
+                            echo "Waiting for Docker daemon..."
+                            sleep 15
 
-                echo "Building Docker image..."
-                docker build -t food-ordering:latest .
-            '''
+                            echo "Logging in to Docker Hub..."
+                            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
+
+                            echo "Building Docker image..."
+                            docker build -t food-ordering:latest .
+                        '''
+                    }
+                }
+            }
         }
-    }
-}
-
 
         stage('SonarQube Analysis') {
             steps {
                 container('sonar-scanner') {
-                    sh '''
-                        sonar-scanner \
-                            -Dsonar.projectKey=2401086-food \
-                            -Dsonar.sources=. \
-                            -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                            -Dsonar.login=sqp_d73b3fdb83e56c241ab9b68c77acb1285f33ec3b
-                    '''
+                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
+                        sh '''
+                            sonar-scanner \
+                              -Dsonar.projectKey=2401086-food \
+                              -Dsonar.sources=. \
+                              -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
+                              -Dsonar.token=$SONAR_TOKEN
+                        '''
+                    }
                 }
             }
         }
@@ -104,19 +116,18 @@ spec:
         }
 
         stage('Push to Nexus') {
-    steps {
-        container('dind') {
-            sh '''
-                echo "Tagging Docker image..."
-                docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
+            steps {
+                container('dind') {
+                    sh '''
+                        echo "Tagging Docker image..."
+                        docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
 
-                echo "Pushing to Nexus..."
-                docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
-            '''
+                        echo "Pushing to Nexus..."
+                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
+                    '''
+                }
+            }
         }
-    }
-}
-
 
         stage('Deploy to Kubernetes') {
             steps {
