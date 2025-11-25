@@ -102,19 +102,20 @@ spec:
             }
         }
 
-        stage('Push to Nexus') {
-            steps {
-                container('dind') {
-                    sh '''
-                        echo "Tagging Docker image..."
-                        docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
+       stage('Push to Nexus') {
+    steps {
+        container('dind') {
+            sh '''
+                echo "Tagging Docker image..."
+                docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
 
-                        echo "Pushing image to Nexus..."
-                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
-                    '''
-                }
-            }
+                echo "Pushing image to Nexus..."
+                docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
+            '''
         }
+    }
+}
+
 
         stage('Deploy to Kubernetes') {
             steps {
