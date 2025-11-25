@@ -67,37 +67,28 @@ spec:
         stage('Build Docker Image') {
             steps {
                 container('dind') {
-                    withCredentials([usernamePassword(
-                        credentialsId: 'dockerhub-creds',
-                        usernameVariable: 'DH_USER',
-                        passwordVariable: 'DH_PASS'
-                    )]) {
-                        sh '''
-                            echo "Waiting for Docker daemon to be ready..."
+                    sh '''
+                        echo "Waiting for Docker daemon to be ready..."
 
-                            # Try for ~60 seconds
-                            for i in $(seq 1 30); do
-                              if docker info >/dev/null 2>&1; then
-                                echo "Docker daemon is ready"
-                                break
-                              fi
-                              echo "Docker not ready yet, retrying in 2s... ($i/30)"
-                              sleep 2
-                            done
+                        # Try for ~60 seconds
+                        for i in $(seq 1 30); do
+                          if docker info >/dev/null 2>&1; then
+                            echo "Docker daemon is ready"
+                            break
+                          fi
+                          echo "Docker not ready yet, retrying in 2s... ($i/30)"
+                          sleep 2
+                        done
 
-                            # Final check – if still not ready, fail clearly
-                            if ! docker info >/dev/null 2>&1; then
-                              echo "Docker daemon is still not reachable. Failing build."
-                              exit 1
-                            fi
+                        # Final check – if still not ready, fail clearly
+                        if ! docker info >/dev/null 2>&1; then
+                          echo "Docker daemon is still not reachable. Failing build."
+                          exit 1
+                        fi
 
-                            echo "Logging in to Docker Hub to avoid rate limits..."
-                            echo "$DH_PASS" | docker login -u "$DH_USER" --password-stdin
-
-                            echo "Building Docker image..."
-                            docker build -t food-ordering:latest .
-                        '''
-                    }
+                        echo "Building Docker image (local tag)..."
+                        docker build -t food-ordering:latest .
+                    '''
                 }
             }
         }
@@ -125,6 +116,7 @@ spec:
                         passwordVariable: 'REG_PASS'
                     )]) {
                         sh '''
+                            echo "Logging in to Nexus Docker Registry..."
                             echo "$REG_PASS" | docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
                               -u "$REG_USER" --password-stdin
                         '''
@@ -137,8 +129,16 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
-                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
+                        REGISTRY="nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+                        IMAGE_NAME="2401086/food-ordering"
+                        IMAGE_TAG="v1"
+                        FULL_IMAGE="$REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
+
+                        echo "Tagging image for Nexus: $FULL_IMAGE"
+                        docker tag food-ordering:latest "$FULL_IMAGE"
+
+                        echo "Pushing image to Nexus..."
+                        docker push "$FULL_IMAGE"
                     '''
                 }
             }
