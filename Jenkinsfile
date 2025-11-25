@@ -51,12 +51,12 @@ spec:
 
     stages {
 
-        stage('Prepare Static Website') {
+        stage('Prepare Static Files') {
             steps {
                 container('node') {
                     sh '''
-                        echo "Static HTML/CSS/JS project — no npm build needed."
-                        echo "Listing project files..."
+                        echo "Static Website — No build required."
+                        echo "Displaying project files:"
                         ls -la
                     '''
                 }
@@ -67,10 +67,11 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Sleeping 10s to allow Docker daemon to start..."
+                        echo "Waiting for Docker daemon..."
                         sleep 10
-                        echo "Building Docker image..."
-                        docker build -t food:latest .
+
+                        echo "Building Docker image for static website..."
+                        docker build -t recipe-finder:latest .
                     '''
                 }
             }
@@ -81,10 +82,10 @@ spec:
                 container('sonar-scanner') {
                     sh '''
                         sonar-scanner \
-                            -Dsonar.projectKey=2401086-food \
+                            -Dsonar.projectKey=2401048-food \
                             -Dsonar.sources=. \
                             -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                            -Dsonar.login=sqp_d73b3fdb83e56c241ab9b68c77acb1285f33ec3b
+                            -Dsonar.login=sqp_e5eafae11fc3f0cf3bd677e0763b65e45bd69a6d
                     '''
                 }
             }
@@ -94,9 +95,8 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Logging in to Nexus Registry..."
-                        docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
-                          -u admin -p Changeme@2025
+                        echo "Logging into Nexus Registry..."
+                        docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
                     '''
                 }
             }
@@ -106,16 +106,11 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        REGISTRY="nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
-                        IMAGE_NAME="2401086/food"
-                        IMAGE_TAG="v1"
-                        FULL_IMAGE="$REGISTRY/$IMAGE_NAME:$IMAGE_TAG"
-
-                        echo "Tagging image: $FULL_IMAGE"
-                        docker tag food:latest "$FULL_IMAGE"
+                        echo "Tagging Docker image..."
+                        docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401048/food-ordering:v1
 
                         echo "Pushing image to Nexus..."
-                        docker push "$FULL_IMAGE"
+                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401048/food-ordering:v1
                     '''
                 }
             }
@@ -125,17 +120,17 @@ spec:
             steps {
                 container('kubectl') {
                     sh '''
-                        echo "Creating namespace 2401086 if not exists..."
-                        kubectl create namespace 2401086 || echo "Namespace already exists"
+                        echo "Deploying to Kubernetes Namespace: 2401048"
 
-                        echo "Applying deployment and service..."
-                        kubectl apply -f k8s/deployment.yaml -n 2401086
-                        kubectl get all -n 2401086
-                        kubectl rollout status deployment/food-deployment -n 2401086
+                        kubectl apply -f k8s/deployment.yaml -n 2401048
+                        kubectl apply -f k8s/service.yaml -n 2401048
+
+                        kubectl get all -n 2401048
+
+                        kubectl rollout status deployment/food-ordering-deployment -n 2401048
                     '''
                 }
             }
         }
-
     }
 }
