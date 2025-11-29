@@ -13,9 +13,11 @@ spec:
       labels:
         app: food-ordering
     spec:
+      imagePullSecrets:
+        -name: nexus-secret 
       containers:
         - name: food-ordering
-          image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
+          image: 120.0.0.1:30085/2401086/food-ordering:v1
           ports:
             - containerPort: 80
 ---
