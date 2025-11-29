@@ -93,7 +93,7 @@ spec:
                 container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
                         script {
-                            // ⚠ If sonar-scanner fails, mark stage failed but continue pipeline
+                            // If sonar-scanner fails, mark stage failed but continue pipeline
                             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 sh '''
                                     sonar-scanner \
@@ -154,7 +154,27 @@ spec:
                         kubectl apply -f k8s/deployment.yaml -n 2401086
                         kubectl apply -f k8s/service.yaml -n 2401086
 
+                        echo "Resources in namespace 2401086:"
                         kubectl get all -n 2401086
+                    '''
+                }
+            }
+        }
+
+        stage('Show Cluster Nodes & Service Info') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "===== Kubernetes Nodes ====="
+                        kubectl get nodes -o wide
+
+                        echo ""
+                        echo "===== Services in namespace 2401086 ====="
+                        kubectl get svc -n 2401086
+
+                        echo ""
+                        echo "If food-ordering-service shows 80:31086/TCP,"
+                        echo "open:  http://<NODE-IP>:31086  in your browser."
                     '''
                 }
             }
