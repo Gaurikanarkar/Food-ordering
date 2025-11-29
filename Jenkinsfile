@@ -93,7 +93,6 @@ spec:
                 container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
                         script {
-                            // If sonar-scanner fails, mark stage failed but continue pipeline
                             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 sh '''
                                     sonar-scanner \
@@ -161,6 +160,22 @@ spec:
             }
         }
 
+        // 🆕 Debug stage to see why ImagePullBackOff happens
+        stage('Debug Pod Image Pull') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "===== Describe food-ordering pod ====="
+                        kubectl describe pod -l app=food-ordering -n 2401086 || true
+
+                        echo ""
+                        echo "===== Last events in namespace 2401086 ====="
+                        kubectl get events -n 2401086 --sort-by=.lastTimestamp | tail -n 20 || true
+                    '''
+                }
+            }
+        }
+
         stage('Show Cluster Nodes & Service Info') {
             steps {
                 container('kubectl') {
@@ -174,7 +189,7 @@ spec:
 
                         echo ""
                         echo "If food-ordering-service shows 80:31086/TCP,"
-                        echo "open:  http://<NODE-IP>:31086  in your browser."
+                        echo "open:  http://192.168.20.250:31086  in your browser."
                     '''
                 }
             }
