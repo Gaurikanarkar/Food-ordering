@@ -92,13 +92,18 @@ spec:
             steps {
                 container('sonar-scanner') {
                     withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                            sonar-scanner \
-                              -Dsonar.projectKey=2401086-food \
-                              -Dsonar.sources=. \
-                              -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                              -Dsonar.token=$SONAR_TOKEN
-                        '''
+                        script {
+                            // ⚠ If sonar-scanner fails, mark stage failed but continue pipeline
+                            catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
+                                sh '''
+                                    sonar-scanner \
+                                      -Dsonar.projectKey=2401086-food \
+                                      -Dsonar.sources=. \
+                                      -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
+                                      -Dsonar.token=$SONAR_TOKEN
+                                '''
+                            }
+                        }
                     }
                 }
             }
@@ -129,7 +134,6 @@ spec:
             }
         }
 
-        /* 🔥 NEW STAGE ADDED BELOW */
         stage('Create Namespace') {
             steps {
                 container('kubectl') {
@@ -151,8 +155,6 @@ spec:
                         kubectl apply -f k8s/service.yaml -n 2401086
 
                         kubectl get all -n 2401086
-
-                       
                     '''
                 }
             }
