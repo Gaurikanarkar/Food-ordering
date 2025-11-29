@@ -1,161 +1,35 @@
-pipeline {
-    agent {
-        kubernetes {
-            yaml '''
-apiVersion: v1
-kind: Pod
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: food-ordering-deployment
+  namespace: "2401086"
 spec:
-  containers:
-
-  - name: node
-    image: node:18
-    command: ['cat']
-    tty: true
-
-  - name: sonar-scanner
-    image: sonarsource/sonar-scanner-cli
-    command: ['cat']
-    tty: true
-
-  - name: kubectl
-    image: bitnami/kubectl:latest
-    command: ['cat']
-    tty: true
-    securityContext:
-      runAsUser: 0
-      readOnlyRootFilesystem: false
-    env:
-    - name: KUBECONFIG
-      value: /kube/config
-    volumeMounts:
-    - name: kubeconfig-secret
-      mountPath: /kube/config
-      subPath: kubeconfig
-
-  - name: dind
-    image: docker:dind
-    args: ["--storage-driver=overlay2", "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"]
-    securityContext:
-      privileged: true
-    env:
-    - name: DOCKER_TLS_CERTDIR
-      value: ""
-
-  volumes:
-  - name: kubeconfig-secret
-    secret:
-      secretName: kubeconfig-secret
-'''
-        }
-    }
-
-    stages {
-
-        stage('Prepare Static Files') {
-            steps {
-                container('node') {
-                    sh '''
-                        echo "Static Website — No build required."
-                        echo "Displaying project files:"
-                        ls -la
-                    '''
-                }
-            }
-        }
-
-        stage('Build Docker Image') {
-            steps {
-                container('dind') {
-                    withCredentials([
-                        usernamePassword(
-                            credentialsId: 'dockerhub-creds',
-                            usernameVariable: 'DOCKERHUB_USER',
-                            passwordVariable: 'DOCKERHUB_PASS'
-                        )
-                    ]) {
-                        sh '''
-                            echo "Waiting for Docker daemon..."
-                            sleep 15
-
-                            echo "Logging in to Docker Hub..."
-                            echo "$DOCKERHUB_PASS" | docker login -u "$DOCKERHUB_USER" --password-stdin
-
-                            echo "Building Docker image..."
-                            docker build -t food-ordering:latest .
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('SonarQube Analysis') {
-            steps {
-                container('sonar-scanner') {
-                    withCredentials([string(credentialsId: 'sonar-token', variable: 'SONAR_TOKEN')]) {
-                        sh '''
-                            sonar-scanner \
-                              -Dsonar.projectKey=2401086-food \
-                              -Dsonar.sources=. \
-                              -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
-                              -Dsonar.token=$SONAR_TOKEN
-                        '''
-                    }
-                }
-            }
-        }
-
-        stage('Login to Nexus Registry') {
-            steps {
-                container('dind') {
-                    sh '''
-                        echo "Logging into Nexus Registry..."
-                        docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
-                    '''
-                }
-            }
-        }
-
-        stage('Push to Nexus') {
-            steps {
-                container('dind') {
-                    sh '''
-                        echo "Tagging Docker image..."
-                        docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
-
-                        echo "Pushing to Nexus..."
-                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
-                    '''
-                }
-            }
-        }
-
-        /* 🔥 NEW STAGE ADDED BELOW */
-        stage('Create Namespace') {
-            steps {
-                container('kubectl') {
-                    sh '''
-                        echo "Ensuring namespace 2401086 exists..."
-                        kubectl get namespace 2401086 || kubectl create namespace 2401086
-                    '''
-                }
-            }
-        }
-
-        stage('Deploy to Kubernetes') {
-            steps {
-                container('kubectl') {
-                    sh '''
-                        echo "Deploying to Kubernetes Namespace: 2401086"
-
-                        kubectl apply -f k8s/deployment.yaml -n 2401086
-                        kubectl apply -f k8s/service.yaml -n 2401086
-
-                        kubectl get all -n 2401086
-
-                       
-                    '''
-                }
-            }
-        }
-    }
-}
+  replicas: 1
+  selector:
+    matchLabels:
+      app: food-ordering
+  template:
+    metadata:
+      labels:
+        app: food-ordering
+    spec:
+      containers:
+      - name: food-ordering
+        image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:v1
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: food-ordering-service
+  namespace: "2401086"
+spec:
+  type: NodePort
+  selector:
+    app: food-ordering
+  ports:
+    - protocol: TCP
+      port: 80          # Internal cluster port
+      targetPort: 80    # Pod container port
+      nodePort: 31086   # Host accessible port (FREE PORT)
