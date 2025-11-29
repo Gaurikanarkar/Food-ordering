@@ -108,13 +108,12 @@ spec:
             }
         }
 
-        stage('Login to Nexus Registry') {
+        stage('Login to Docker Registry') {
             steps {
                 container('dind') {
-                    sh '''
-                        echo "Logging into Nexus Registry..."
-                        docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025
-                    '''
+                    sh 'docker --version'
+                    sh 'sleep 10'
+                    sh 'docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025'
                 }
             }
         }
