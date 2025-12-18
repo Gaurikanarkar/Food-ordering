@@ -208,7 +208,6 @@
 //     }
 // }
 
-
 pipeline {
     agent {
         kubernetes {
@@ -264,26 +263,34 @@ spec:
 
     - name: docker-storage
       emptyDir: {}
-
 '''
         }
     }
 
+    /* ================= ENVIRONMENT ================= */
     environment {
         VITE_API_KEY = credentials('SPOONACULAR_API_KEY')
         REGISTRY = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
         IMAGE    = "2401086/food-ordering"
-        VERSION  = "v5"  // 🔥 UPDATE VERSION EACH DEPLOYMENT
+        VERSION  = "v1"     // 🔁 CHANGE VERSION EACH DEPLOY
+        SONAR_HOST = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
     }
 
     stages {
 
-        /* ------------------------- FRONTEND BUILD ------------------------- */
+        /* ================= CHECKOUT ================= */
+        stage('Checkout') {
+            steps {
+                git url: 'https://github.com/Gaurikanarkar/Food-ordering.git', branch: 'main'
+            }
+        }
+
+        /* ================= FRONTEND BUILD ================= */
         stage('Install + Build Frontend') {
             steps {
                 container('node') {
                     sh '''
-                        echo "Building frontend at repo root"
+                        echo "Building Food-ordering frontend..."
                         export VITE_API_KEY=$VITE_API_KEY
                         npm install
                         npm run build
@@ -293,9 +300,7 @@ spec:
             }
         }
 
-
-
-        /* ------------------------- DOCKER BUILD --------------------------- */
+        /* ================= DOCKER BUILD ================= */
         stage('Build Docker Image') {
             steps {
                 container('dind') {
@@ -309,24 +314,25 @@ spec:
             }
         }
 
-
-
-        /* ------------------------- SONARQUBE ------------------------------ */
+        /* ================= SONARQUBE ================= */
         stage('SonarQube Analysis') {
             steps {
                 container('sonar-scanner') {
                     sh '''
+                        echo "Checking SonarQube reachability..."
+                        curl -I $SONAR_HOST || echo "SonarQube not reachable, continuing..."
+
                         sonar-scanner \
-                          -Dsonar.projectKey=2401086 \
+                          -Dsonar.projectKey=2401086- \
                           -Dsonar.sources=. \
-                          -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
+                          -Dsonar.host.url=$SONAR_HOST \
                           -Dsonar.login=sqp_47e2a797ae3cc173d07184483e7b25bf6fad1326
                     '''
                 }
             }
         }
 
-        /* ---------------------- DOCKER LOGIN ------------------------------ */
+        /* ================= DOCKER LOGIN ================= */
         stage('Login to Nexus Registry') {
             steps {
                 container('dind') {
@@ -338,7 +344,7 @@ spec:
             }
         }
 
-        /* ---------------------- PUSH IMAGE ------------------------------- */
+        /* ================= PUSH IMAGE ================= */
         stage('Push to Nexus') {
             steps {
                 container('dind') {
@@ -351,16 +357,34 @@ spec:
             }
         }
 
-        /* ---------------------- DEPLOY TO K8S ----------------------------- */
+        /* ================= DEPLOY TO K8S ================= */
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
-                    sh """
+                    sh '''
                         echo "Updating Kubernetes deployment..."
-                        kubectl set image deployment/recipe-finder-deployment food-ordering=$REGISTRY/$IMAGE:$VERSION -n 2401086
+                        kubectl set image deployment/food-ordering-deployment \
+                          food-ordering=$REGISTRY/$IMAGE:$VERSION \
+                          -n 2401086
 
-                       
-                    """
+                        kubectl rollout status deployment/food-ordering-deployment \
+                          -n 2401086 --timeout=120s
+                    '''
+                }
+            }
+        }
+
+        /* ================= DEBUG ================= */
+        stage('Debug Pods') {
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "[DEBUG] Pods status:"
+                        kubectl get pods -n 2401086
+
+                        echo "[DEBUG] Describe pods:"
+                        kubectl describe pods -n 2401086 | head -n 200
+                    '''
                 }
             }
         }
