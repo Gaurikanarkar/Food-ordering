@@ -208,8 +208,6 @@
 //     }
 // }
 
-
-
 pipeline {
     agent {
         kubernetes {
@@ -231,32 +229,33 @@ spec:
       runAsUser: 0
       readOnlyRootFilesystem: false
     env:
-    - name: KUBECONFIG
-      value: /kube/config
+      - name: KUBECONFIG
+        value: /kube/config
     volumeMounts:
-    - name: kubeconfig-secret
-      mountPath: /kube/config
-      subPath: kubeconfig
+      - name: kubeconfig-secret
+        mountPath: /kube/config
+        subPath: kubeconfig
 
   - name: dind
     image: docker:dind
     securityContext:
       privileged: true
     env:
-    - name: DOCKER_TLS_CERTDIR
-      value: ""
+      - name: DOCKER_TLS_CERTDIR
+        value: ""
     volumeMounts:
-    - name: docker-config
-      mountPath: /etc/docker/daemon.json
-      subPath: daemon.json
+      - name: docker-config
+        mountPath: /etc/docker/daemon.json
+        subPath: daemon.json
 
   volumes:
-  - name: docker-config
-    configMap:
-      name: docker-daemon-config
-  - name: kubeconfig-secret
-    secret:
-      secretName: kubeconfig-secret
+    - name: docker-config
+      configMap:
+        name: docker-daemon-config
+
+    - name: kubeconfig-secret
+      secret:
+        secretName: kubeconfig-secret
 '''
         }
     }
@@ -342,26 +341,24 @@ spec:
                     }
                 }
             }
-
         }
+
         stage('Deploy to Kubernetes') {
-    steps {
-        container('kubectl') {
-            sh '''
-                echo "Restarting deployment cleanly..."
+            steps {
+                container('kubectl') {
+                    sh '''
+                        echo "Restarting deployment cleanly..."
 
-                kubectl rollout restart deployment food-ordering-frontend-deployment -n 2401086
+                        kubectl rollout restart deployment food-ordering-frontend-deployment -n 2401086
 
-                kubectl rollout status deployment food-ordering-frontend-deployment \
-                  -n 2401086 --timeout=300s
+                        kubectl rollout status deployment food-ordering-frontend-deployment \
+                          -n 2401086 --timeout=300s
 
-                echo "Pod status:"
-                kubectl get pods -n 2401086
-            '''
+                        echo "Pod status:"
+                        kubectl get pods -n 2401086
+                    '''
+                }
+            }
         }
-    }
-}
-
-
     }
 }
