@@ -208,6 +208,148 @@
 //     }
 // }
 
+// pipeline {
+//     agent {
+//         kubernetes {
+//             yaml '''
+// apiVersion: v1
+// kind: Pod
+// spec:
+//   containers:
+
+//   # ---------------- Sonar Scanner ----------------
+//   - name: sonar-scanner
+//     image: sonarsource/sonar-scanner-cli
+//     command: ["cat"]
+//     tty: true
+
+//   # ---------------- Kubectl ----------------
+//   - name: kubectl
+//     image: bitnami/kubectl:latest
+//     command: ["cat"]
+//     tty: true
+//     securityContext:
+//       runAsUser: 0
+//     env:
+//     - name: KUBECONFIG
+//       value: /kube/config
+//     volumeMounts:
+//     - name: kubeconfig-secret
+//       mountPath: /kube/config
+//       subPath: kubeconfig
+
+//   # ---------------- Docker-in-Docker (FIXED PROPERLY) ----------------
+//   - name: dind
+//     image: docker:24-dind
+//     securityContext:
+//       privileged: true
+//     command: ["dockerd-entrypoint.sh"]
+//     args:
+//       - "--host=unix:///var/run/docker.sock"
+//     env:
+//     - name: DOCKER_TLS_CERTDIR
+//       value: ""
+//     volumeMounts:
+//     - name: docker-graph-storage
+//       mountPath: /var/lib/docker
+//     - name: docker-run
+//       mountPath: /var/run
+
+//   volumes:
+//   - name: docker-graph-storage
+//     emptyDir: {}
+//   - name: docker-run
+//     emptyDir: {}
+//   - name: kubeconfig-secret
+//     secret:
+//       secretName: kubeconfig-secret
+// '''
+//         }
+//     }
+
+//     environment {
+//         SONAR_HOST = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
+//         REGISTRY   = "nexus-service.nexus.svc.cluster.local:8085"
+//         IMAGE      = "2401086_food-ordering/food-ordering:v1"
+//     }
+
+//     stages {
+
+//         stage('Build Docker Image') {
+//             steps {
+//                 container('dind') {
+//                     sh '''
+//                         echo "Waiting for Docker daemon..."
+//                         sleep 20
+//                         docker info
+//                         docker build -t food-ordering:latest .
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage('SonarQube Analysis') {
+//             steps {
+//                 container('sonar-scanner') {
+//                     withCredentials([
+//                         string(credentialsId: 'sonartoken-2401086', variable: 'SONAR_TOKEN')
+//                     ]) {
+//                         sh '''
+//                             sonar-scanner \
+//                               -Dsonar.projectKey=2401086- \
+//                               -Dsonar.sources=. \
+//                               -Dsonar.exclusions=node_modules/**,dist/** \
+//                               -Dsonar.host.url=${SONAR_HOST} \
+//                               -Dsonar.token=${SONAR_TOKEN} \
+//                               -Dsonar.scanner.force-deprecated-api=true
+//                         '''
+//                     }
+//                 }
+//             }
+//         }
+
+//         stage('Login to Nexus') {
+//             steps {
+//                 container('dind') {
+//                     sh '''
+//                         echo "Imcc@2025" | docker login ${REGISTRY} \
+//                           -u student \
+//                           --password-stdin
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage('Tag & Push Image') {
+//             steps {
+//                 container('dind') {
+//                     sh '''
+//                         docker tag food-ordering:latest ${REGISTRY}/${IMAGE}
+//                         docker push ${REGISTRY}/${IMAGE}
+//                     '''
+//                 }
+//             }
+//         }
+
+//         stage('Deploy to Kubernetes') {
+//             steps {
+//                 container('kubectl') {
+//                     dir('k8s') {
+//                         sh '''
+//                             kubectl apply -f deployment.yaml -n 2401086
+//                             kubectl apply -f service.yaml -n 2401086
+//                             kubectl rollout status deployment/food-ordering-frontend-deployment \
+//                               -n 2401086 --timeout=120s
+//                         '''
+//                     }
+//                 }
+//             }
+//         }
+//     }
+// }
+
+
+
 pipeline {
     agent {
         kubernetes {
@@ -217,19 +359,18 @@ kind: Pod
 spec:
   containers:
 
-  # ---------------- Sonar Scanner ----------------
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
-    command: ["cat"]
+    command: ['cat']
     tty: true
 
-  # ---------------- Kubectl ----------------
   - name: kubectl
     image: bitnami/kubectl:latest
-    command: ["cat"]
+    command: ['cat']
     tty: true
     securityContext:
       runAsUser: 0
+      readOnlyRootFilesystem: false
     env:
     - name: KUBECONFIG
       value: /kube/config
@@ -238,28 +379,22 @@ spec:
       mountPath: /kube/config
       subPath: kubeconfig
 
-  # ---------------- Docker-in-Docker (FIXED PROPERLY) ----------------
   - name: dind
-    image: docker:24-dind
+    image: docker:dind
     securityContext:
       privileged: true
-    command: ["dockerd-entrypoint.sh"]
-    args:
-      - "--host=unix:///var/run/docker.sock"
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ""
     volumeMounts:
-    - name: docker-graph-storage
-      mountPath: /var/lib/docker
-    - name: docker-run
-      mountPath: /var/run
+    - name: docker-config
+      mountPath: /etc/docker/daemon.json
+      subPath: daemon.json
 
   volumes:
-  - name: docker-graph-storage
-    emptyDir: {}
-  - name: docker-run
-    emptyDir: {}
+  - name: docker-config
+    configMap:
+      name: docker-daemon-config
   - name: kubeconfig-secret
     secret:
       secretName: kubeconfig-secret
@@ -267,27 +402,25 @@ spec:
         }
     }
 
-    environment {
-        SONAR_HOST = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
-        REGISTRY   = "nexus-service.nexus.svc.cluster.local:8085"
-        IMAGE      = "2401086_food-ordering/food-ordering:v1"
-    }
-
     stages {
 
+        /* =======================
+           BUILD DOCKER IMAGE
+        ======================== */
         stage('Build Docker Image') {
             steps {
                 container('dind') {
                     sh '''
-                        echo "Waiting for Docker daemon..."
-                        sleep 20
-                        docker info
+                        sleep 15
                         docker build -t food-ordering:latest .
                     '''
                 }
             }
         }
 
+        /* =======================
+           SONARQUBE ANALYSIS
+        ======================== */
         stage('SonarQube Analysis') {
             steps {
                 container('sonar-scanner') {
@@ -296,41 +429,58 @@ spec:
                     ]) {
                         sh '''
                             sonar-scanner \
-                              -Dsonar.projectKey=2401086- \
+                              -Dsonar.projectKey=2401086-\
+                              -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
+                              -Dsonar.token=$SONAR_TOKEN \
                               -Dsonar.sources=. \
-                              -Dsonar.exclusions=node_modules/**,dist/** \
-                              -Dsonar.host.url=${SONAR_HOST} \
-                              -Dsonar.token=${SONAR_TOKEN} \
-                              -Dsonar.scanner.force-deprecated-api=true
+                              -Dsonar.exclusions=node_modules/**,dist/**
                         '''
                     }
                 }
             }
         }
 
-        stage('Login to Nexus') {
+        /* =======================
+           LOGIN TO NEXUS
+        ======================== */
+        stage('Login to Docker Registry') {
             steps {
                 container('dind') {
                     sh '''
-                        echo "Imcc@2025" | docker login ${REGISTRY} \
-                          -u student \
-                          --password-stdin
+                        docker --version
+                        sleep 10
+                        docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 \
+                          -u admin -p Changeme@2025
                     '''
                 }
             }
         }
 
-        stage('Tag & Push Image') {
+        /* =======================
+           TAG & PUSH IMAGE
+        ======================== */
+        stage('Build - Tag - Push') {
             steps {
                 container('dind') {
                     sh '''
-                        docker tag food-ordering:latest ${REGISTRY}/${IMAGE}
-                        docker push ${REGISTRY}/${IMAGE}
+                        docker tag food-ordering:latest \
+                          nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:latest
+
+                        docker push \
+                          nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:latest
+
+                        docker pull \
+                          nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086/food-ordering:latest
+
+                        docker image ls
                     '''
                 }
             }
         }
 
+        /* =======================
+           DEPLOY TO KUBERNETES
+        ======================== */
         stage('Deploy to Kubernetes') {
             steps {
                 container('kubectl') {
@@ -338,8 +488,9 @@ spec:
                         sh '''
                             kubectl apply -f deployment.yaml -n 2401086
                             kubectl apply -f service.yaml -n 2401086
-                            kubectl rollout status deployment/food-ordering-frontend-deployment \
-                              -n 2401086 --timeout=120s
+
+                            kubectl get all -n 2401086
+                            kubectl rollout status deployment/food-ordering-deployment -n 2401086
                         '''
                     }
                 }
