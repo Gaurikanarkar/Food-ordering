@@ -32,8 +32,8 @@ spec:
   # kubectl for deployment
   - name: kubectl
     image: bitnami/kubectl:1.29
-    command: ["sleep", "infinity"]
-
+    command: ["cat"]
+    tty: true
     env:
     - name: KUBECONFIG
       value: /kube/config
