@@ -314,7 +314,7 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker tag food-orderinh:latest \
+                        docker tag food-ordering:latest \
                           nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086_food-ordering/food-ordering:v1
 
                         docker push \
