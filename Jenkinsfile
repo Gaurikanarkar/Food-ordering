@@ -344,19 +344,24 @@ spec:
             }
 
         }
-        stage('Debug Kubernetes Pods') {
+        stage('Deploy to Kubernetes') {
     steps {
         container('kubectl') {
             sh '''
-                echo "=== POD STATUS ==="
-                kubectl get pods -n 2401086
+                echo "Restarting deployment cleanly..."
 
-                echo "=== DESCRIBE PODS ==="
-                kubectl describe pods -n 2401086 | tail -n 50
+                kubectl rollout restart deployment food-ordering-frontend-deployment -n 2401086
+
+                kubectl rollout status deployment food-ordering-frontend-deployment \
+                  -n 2401086 --timeout=300s
+
+                echo "Pod status:"
+                kubectl get pods -n 2401086
             '''
         }
     }
 }
+
 
     }
 }
