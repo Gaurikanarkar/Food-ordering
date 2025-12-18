@@ -1,9 +1,15 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: food-ordering
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: food-ordering-deployment
+  namespace: food-ordering
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: food-ordering
@@ -12,8 +18,39 @@ spec:
       labels:
         app: food-ordering
     spec:
+      imagePullSecrets:
+        - name: nexus-secret  
+
       containers:
         - name: food-ordering
           image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/2401086_food-ordering/food-ordering:v1
+
           ports:
             - containerPort: 80
+
+          # Static frontend → no DB envs needed
+          env:
+            - name: DEBUG
+              value: "0"
+
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 10
+
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 80
+            initialDelaySeconds: 30
+            periodSeconds: 30
+
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "256Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
