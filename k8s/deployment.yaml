@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
         - name: food-website
-          image: your-dockerhub-username/food-website:latest
+          image: nexus.imcc.com:8083/my-repository/2401086_food-ordering/food-ordering:v1
           ports:
             - containerPort: 80
