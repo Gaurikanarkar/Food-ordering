@@ -127,23 +127,17 @@ spec:
 
     stage('Deploy Application') {
       steps {
-        container('dind') {
+        container('kubectl') {
           sh '''
-            echo "Installing kubectl..."
-            apk add --no-cache curl
+            echo "Shell test"
+            which sh || true
+            kubectl version --client
 
-            curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
-            chmod +x kubectl
-            mv kubectl /usr/local/bin/
-
-            echo "Deploying application..."
             kubectl apply -f k8s/deployment.yaml
-            kubectl apply -f k8s/service.yaml
             kubectl rollout status deployment/food-ordering-deployment -n food-ordering
           '''
         }
       }
     }
-
   }
 }
