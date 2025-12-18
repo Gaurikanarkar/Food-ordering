@@ -286,8 +286,8 @@ spec:
                 container('dind') {
                     sh '''
                         sleep 10
-                        echo "=== Building Food-ordering Docker Image ==="
-                        docker build -t Food-ordering:latest .
+                        echo "=== Building food-ordering Docker Image ==="
+                        docker build -t food-ordering:latest .
                     '''
                 }
             }
@@ -342,9 +342,9 @@ spec:
                 container('dind') {
                     sh '''
                         echo "Tagging Food-ordering image..."
-                        docker tag Food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086_Food-ordering/Food-ordering:v1
+                        docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086_Food-ordering/Food-ordering:v1
 
-                        echo "Pushing Food-ordering image to Nexus..."
+                        echo "Pushing food-ordering image to Nexus..."
                         docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086_Food-ordering/Food-ordering:v1
                     '''
                 }
