@@ -1,17 +1,14 @@
 pipeline {
     agent any
 
+    environment {
+        REGISTRY = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+        IMAGE = "my-repository/2401086_food-ordering/food-ordering:v1"
+    }
+
     stages {
 
-        stage('Build Docker Image') {
-            steps {
-                sh '''
-                docker build -t food-ordering:v1 .
-                '''
-            }
-        }
-
-        stage('SonarQube Analysis') {
+        stage('SonarQube Scan') {
             steps {
                 sh '''
                 sonar-scanner \
@@ -23,26 +20,14 @@ pipeline {
             }
         }
 
-        stage('Tag Image for Nexus') {
+        stage('Build & Push Image (Kaniko)') {
             steps {
                 sh '''
-                docker tag food-ordering:v1 nexus.imcc.com:8083/my-repository/2401086_food-ordering/food-ordering:v1
-                '''
-            }
-        }
-
-        stage('Login to Nexus') {
-            steps {
-                sh '''
-                docker login nexus.imcc.com:8083 -u admin -p Changeme@2025
-                '''
-            }
-        }
-
-        stage('Push Image to Nexus') {
-            steps {
-                sh '''
-                docker push nexus.imcc.com:8083/my-repository/2401086_food-ordering/food-ordering:v1
+                /kaniko/executor \
+                  --context $(pwd) \
+                  --dockerfile Dockerfile \
+                  --destination=${REGISTRY}/${IMAGE} \
+                  --skip-tls-verify
                 '''
             }
         }
