@@ -125,13 +125,18 @@ spec:
       }
     }
 
-    stage('Deploy Application') {
+    stage('Deploy to Kubernetes') {
       steps {
         container('kubectl') {
           sh '''
-            kubectl apply -f k8s/deployment.yaml
-            kubectl apply -f k8s/service.yaml
-            kubectl rollout status deployment/${APP_NAME}
+            echo "Updating Kubernetes deployment image..."
+
+            kubectl set image deployment/food-ordering-deployment \
+              food-ordering=${REGISTRY_URL}/${REGISTRY_REPO}/food-ordering:${IMAGE_TAG} \
+              -n food-ordering
+
+            echo "Waiting for rollout to complete..."
+            kubectl rollout status deployment/food-ordering-deployment -n food-ordering
           '''
         }
       }
