@@ -1,8 +1,13 @@
 FROM nginx:alpine
 
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+# Remove default nginx content
+RUN rm -rf /usr/share/nginx/html/*
+
+# Copy all frontend files
 COPY . /usr/share/nginx/html
 
+# Expose port
 EXPOSE 80
 
+# Start nginx
 CMD ["nginx", "-g", "daemon off;"]
