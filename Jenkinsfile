@@ -96,7 +96,7 @@ spec:
                             catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
                                 sh '''
                                     sonar-scanner \
-                                      -Dsonar.projectKey=2401086-food \
+                                      -Dsonar.projectKey=2401086- \
                                       -Dsonar.sources=. \
                                       -Dsonar.host.url=http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000 \
                                       -Dsonar.token=$SONAR_TOKEN
