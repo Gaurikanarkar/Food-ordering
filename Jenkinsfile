@@ -261,9 +261,14 @@ spec:
     }
 
     environment {
+        // SonarQube internal Kubernetes service
         SONAR_HOST = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
-        REGISTRY   = "nexus.imcc.com:8085"
-        IMAGE      = "2401086_food-ordering/food-ordering:v1"
+
+        // Nexus Kubernetes service DNS (FIXED)
+        REGISTRY = "nexus-service.nexus.svc.cluster.local:8085"
+
+        // Image path inside Nexus
+        IMAGE = "2401086_food-ordering/food-ordering:v1"
     }
 
     stages {
@@ -272,8 +277,7 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Building food-ordering Docker image..."
-                        sleep 10
+                        echo "Building Docker image..."
                         docker build -t food-ordering:latest .
                     '''
                 }
@@ -292,7 +296,8 @@ spec:
                               -Dsonar.sources=. \
                               -Dsonar.exclusions=node_modules/**,dist/** \
                               -Dsonar.host.url=${SONAR_HOST} \
-                              -Dsonar.token=${SONAR_TOKEN}
+                              -Dsonar.token=${SONAR_TOKEN} \
+                              -Dsonar.scanner.force-deprecated-api=true
                         '''
                     }
                 }
@@ -303,8 +308,9 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        docker login ${REGISTRY} \
-                          -u student -p Imcc@2025
+                        echo "Imcc@2025" | docker login ${REGISTRY} \
+                          -u student \
+                          --password-stdin
                     '''
                 }
             }
@@ -327,7 +333,7 @@ spec:
                 container('kubectl') {
                     dir('k8s') {
                         sh '''
-                            echo "Deploying food-ordering application..."
+                            echo "Deploying application to Kubernetes..."
 
                             kubectl apply -f deployment.yaml -n 2401086
                             kubectl apply -f service.yaml -n 2401086
