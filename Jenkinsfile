@@ -217,13 +217,13 @@ kind: Pod
 spec:
   containers:
 
-  # ---------- Sonar Scanner ----------
+  # ---------------- Sonar Scanner ----------------
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
     command: ["cat"]
     tty: true
 
-  # ---------- Kubectl ----------
+  # ---------------- Kubectl ----------------
   - name: kubectl
     image: bitnami/kubectl:latest
     command: ["cat"]
@@ -238,7 +238,7 @@ spec:
       mountPath: /kube/config
       subPath: kubeconfig
 
-  # ---------- Docker-in-Docker (FIXED) ----------
+  # ---------------- Docker-in-Docker (FIXED PROPERLY) ----------------
   - name: dind
     image: docker:24-dind
     securityContext:
@@ -249,8 +249,17 @@ spec:
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ""
+    volumeMounts:
+    - name: docker-graph-storage
+      mountPath: /var/lib/docker
+    - name: docker-run
+      mountPath: /var/run
 
   volumes:
+  - name: docker-graph-storage
+    emptyDir: {}
+  - name: docker-run
+    emptyDir: {}
   - name: kubeconfig-secret
     secret:
       secretName: kubeconfig-secret
@@ -259,14 +268,9 @@ spec:
     }
 
     environment {
-        // SonarQube Kubernetes Service
         SONAR_HOST = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
-
-        // Nexus Kubernetes Service DNS (NOT external domain)
-        REGISTRY = "nexus-service.nexus.svc.cluster.local:8085"
-
-        // Nexus image path
-        IMAGE = "2401086_food-ordering/food-ordering:v1"
+        REGISTRY   = "nexus-service.nexus.svc.cluster.local:8085"
+        IMAGE      = "2401086_food-ordering/food-ordering:v1"
     }
 
     stages {
@@ -275,7 +279,8 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Building Docker image..."
+                        echo "Waiting for Docker daemon..."
+                        sleep 20
                         docker info
                         docker build -t food-ordering:latest .
                     '''
@@ -307,7 +312,6 @@ spec:
             steps {
                 container('dind') {
                     sh '''
-                        echo "Logging in to Nexus..."
                         echo "Imcc@2025" | docker login ${REGISTRY} \
                           -u student \
                           --password-stdin
@@ -322,7 +326,6 @@ spec:
                     sh '''
                         docker tag food-ordering:latest ${REGISTRY}/${IMAGE}
                         docker push ${REGISTRY}/${IMAGE}
-                        docker image ls
                     '''
                 }
             }
@@ -333,12 +336,8 @@ spec:
                 container('kubectl') {
                     dir('k8s') {
                         sh '''
-                            echo "Deploying application..."
-
                             kubectl apply -f deployment.yaml -n 2401086
                             kubectl apply -f service.yaml -n 2401086
-                            kubectl apply -f ingress.yaml -n 2401086
-
                             kubectl rollout status deployment/food-ordering-frontend-deployment \
                               -n 2401086 --timeout=120s
                         '''
