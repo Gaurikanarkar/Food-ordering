@@ -217,18 +217,19 @@ kind: Pod
 spec:
   containers:
 
+  # ---------- Sonar Scanner ----------
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
     command: ["cat"]
     tty: true
 
+  # ---------- Kubectl ----------
   - name: kubectl
     image: bitnami/kubectl:latest
     command: ["cat"]
     tty: true
     securityContext:
       runAsUser: 0
-      readOnlyRootFilesystem: false
     env:
     - name: KUBECONFIG
       value: /kube/config
@@ -237,22 +238,19 @@ spec:
       mountPath: /kube/config
       subPath: kubeconfig
 
+  # ---------- Docker-in-Docker (FIXED) ----------
   - name: dind
-    image: docker:dind
+    image: docker:24-dind
     securityContext:
       privileged: true
+    command: ["dockerd-entrypoint.sh"]
+    args:
+      - "--host=unix:///var/run/docker.sock"
     env:
     - name: DOCKER_TLS_CERTDIR
       value: ""
-    volumeMounts:
-    - name: docker-config
-      mountPath: /etc/docker/daemon.json
-      subPath: daemon.json
 
   volumes:
-  - name: docker-config
-    configMap:
-      name: docker-daemon-config
   - name: kubeconfig-secret
     secret:
       secretName: kubeconfig-secret
@@ -261,13 +259,13 @@ spec:
     }
 
     environment {
-        // SonarQube internal Kubernetes service
+        // SonarQube Kubernetes Service
         SONAR_HOST = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
 
-        // Nexus Kubernetes service DNS (FIXED)
+        // Nexus Kubernetes Service DNS (NOT external domain)
         REGISTRY = "nexus-service.nexus.svc.cluster.local:8085"
 
-        // Image path inside Nexus
+        // Nexus image path
         IMAGE = "2401086_food-ordering/food-ordering:v1"
     }
 
@@ -278,6 +276,7 @@ spec:
                 container('dind') {
                     sh '''
                         echo "Building Docker image..."
+                        docker info
                         docker build -t food-ordering:latest .
                     '''
                 }
@@ -308,6 +307,7 @@ spec:
             steps {
                 container('dind') {
                     sh '''
+                        echo "Logging in to Nexus..."
                         echo "Imcc@2025" | docker login ${REGISTRY} \
                           -u student \
                           --password-stdin
@@ -333,7 +333,7 @@ spec:
                 container('kubectl') {
                     dir('k8s') {
                         sh '''
-                            echo "Deploying application to Kubernetes..."
+                            echo "Deploying application..."
 
                             kubectl apply -f deployment.yaml -n 2401086
                             kubectl apply -f service.yaml -n 2401086
