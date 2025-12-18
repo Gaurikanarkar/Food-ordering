@@ -340,6 +340,32 @@ spec:
     }
 }
 
+stage('Force Clean Old ReplicaSets') {
+    steps {
+        container('kubectl') {
+            sh '''
+                echo "Deleting all old ReplicaSets..."
+                kubectl delete rs -n 2401086 --all || true
+            '''
+        }
+    }
+}
+
+stage('Force Delete Stuck Pods') {
+    steps {
+        container('kubectl') {
+            sh '''
+                echo "Deleting stuck pods if any..."
+                kubectl get pods -n 2401086
+
+                kubectl delete pod -n 2401086 \
+                  --field-selector=status.phase=Failed \
+                  --grace-period=0 --force || true
+            '''
+        }
+    }
+}
+
 stage('Restart Kubernetes Deployment') {
     steps {
         container('kubectl') {
@@ -370,7 +396,8 @@ stage('Debug Kubernetes Pods') {
             '''
         }
     }
-    }
+}
+
     
     }
 }
