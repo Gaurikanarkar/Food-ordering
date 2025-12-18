@@ -7,16 +7,14 @@ kind: Pod
 spec:
   containers:
 
-  # Docker CLI container
   - name: docker
     image: docker:24.0-cli
     command: ["cat"]
     tty: true
     env:
       - name: DOCKER_HOST
-        value: tcp://dind:2375
+        value: tcp://127.0.0.1:2375
 
-  # Docker daemon (DinD)
   - name: dind
     image: docker:24.0-dind
     securityContext:
@@ -32,13 +30,11 @@ spec:
       - name: docker-storage
         mountPath: /var/lib/docker
 
-  # SonarQube scanner
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
     command: ["cat"]
     tty: true
 
-  # kubectl for deployment
   - name: kubectl
     image: bitnami/kubectl:latest
     command: ["cat"]
@@ -79,9 +75,7 @@ spec:
     stage('Build Docker Image') {
       steps {
         container('docker') {
-          sh '''
-          docker build -t food-ordering:v1 .
-          '''
+          sh 'docker build -t food-ordering:v1 .'
         }
       }
     }
@@ -103,9 +97,7 @@ spec:
     stage('Tag Image for Nexus') {
       steps {
         container('docker') {
-          sh '''
-          docker tag food-ordering:v1 ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
-          '''
+          sh 'docker tag food-ordering:v1 ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}'
         }
       }
     }
@@ -113,11 +105,7 @@ spec:
     stage('Login to Nexus') {
       steps {
         container('docker') {
-          sh '''
-          docker login ${REGISTRY} \
-            -u ${NEXUS_USER} \
-            -p ${NEXUS_PASS}
-          '''
+          sh 'docker login ${REGISTRY} -u ${NEXUS_USER} -p ${NEXUS_PASS}'
         }
       }
     }
@@ -125,9 +113,7 @@ spec:
     stage('Push Image to Nexus') {
       steps {
         container('docker') {
-          sh '''
-          docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}
-          '''
+          sh 'docker push ${REGISTRY}/${IMAGE_NAME}:${IMAGE_TAG}'
         }
       }
     }
