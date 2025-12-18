@@ -335,7 +335,7 @@ spec:
                             kubectl apply -f deployment.yaml -n 2401086
                             kubectl apply -f service.yaml -n 2401086
 
-                            kubectl rollout status deployment/food-ordering-deployment \
+                            kubectl rollout status deployment/food-ordering-frontend-deployment \
                               -n 2401086 --timeout=120s
                         '''
                         
