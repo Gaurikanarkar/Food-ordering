@@ -7,16 +7,16 @@ kind: Pod
 spec:
   containers:
 
-  # Docker CLI (runs docker build / push)
+  # Docker CLI container
   - name: docker
     image: docker:24.0-cli
     command: ["cat"]
     tty: true
     env:
       - name: DOCKER_HOST
-        value: tcp://localhost:2375
+        value: tcp://dind:2375
 
-  # Docker daemon
+  # Docker daemon (DinD)
   - name: dind
     image: docker:24.0-dind
     securityContext:
@@ -63,15 +63,15 @@ spec:
   }
 
   environment {
-    REGISTRY = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
-    IMAGE_NAME = "my-repository/2401086_food-ordering/food-ordering"
-    IMAGE_TAG = "v1"
+    REGISTRY    = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+    IMAGE_NAME  = "my-repository/2401086_food-ordering/food-ordering"
+    IMAGE_TAG   = "v1"
 
-    SONAR_HOST = "http://sonarQube.imcc.com:9000"
+    SONAR_HOST  = "http://sonarQube.imcc.com:9000"
     SONAR_TOKEN = "sqa_da3fcbf5edab54300c5f5e4c5df6ff7ac0670303"
 
-    NEXUS_USER = "admin"
-    NEXUS_PASS = "Changeme@2025"
+    NEXUS_USER  = "admin"
+    NEXUS_PASS  = "Changeme@2025"
   }
 
   stages {
