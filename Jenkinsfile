@@ -6,7 +6,7 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 sh '''
-                docker build -t nexus.imcc.com:8083/my-repository/2401086_food-ordering/food-ordering:v1 .
+                docker build -t food-ordering:v1 .
                 '''
             }
         }
@@ -23,12 +23,18 @@ pipeline {
             }
         }
 
+        stage('Tag Image for Nexus') {
+            steps {
+                sh '''
+                docker tag food-ordering:v1 nexus.imcc.com:8083/my-repository/2401086_food-ordering/food-ordering:v1
+                '''
+            }
+        }
+
         stage('Login to Nexus') {
             steps {
                 sh '''
-                docker login nexus.imcc.com:8083 \
-                -u admin \
-                -p Changeme@2025
+                docker login nexus.imcc.com:8083 -u admin -p Changeme@2025
                 '''
             }
         }
