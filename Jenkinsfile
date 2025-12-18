@@ -125,21 +125,25 @@ spec:
       }
     }
 
-    stage('Deploy to Kubernetes') {
+    stage('Deploy Application') {
       steps {
-        container('kubectl') {
+        container('dind') {
           sh '''
-            echo "Updating Kubernetes deployment image..."
+            echo "Installing kubectl..."
+            apk add --no-cache curl
 
-            kubectl set image deployment/food-ordering-deployment \
-              food-ordering=${REGISTRY_URL}/${REGISTRY_REPO}/food-ordering:${IMAGE_TAG} \
-              -n food-ordering
+            curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl
+            chmod +x kubectl
+            mv kubectl /usr/local/bin/
 
-            echo "Waiting for rollout to complete..."
+            echo "Deploying application..."
+            kubectl apply -f k8s/deployment.yaml
+            kubectl apply -f k8s/service.yaml
             kubectl rollout status deployment/food-ordering-deployment -n food-ordering
           '''
         }
       }
     }
+
   }
 }
