@@ -361,5 +361,18 @@ spec:
                 }
             }
         }
+        stage('Debug Kubernetes Pods') {
+    steps {
+        container('kubectl') {
+            sh '''
+                echo "===== POD LIST ====="
+                kubectl get pods -n 2401086
+
+                echo "===== POD DETAILS ====="
+                kubectl describe pods -n 2401086 | tail -n 50
+            '''
+        }
+    }
+    }
     }
 }
