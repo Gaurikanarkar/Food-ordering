@@ -342,10 +342,10 @@ spec:
                 container('dind') {
                     sh '''
                         echo "Tagging Food-ordering image..."
-                        docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086_Food-ordering/Food-ordering:v1
+                        docker tag food-ordering:latest nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086_food-ordering/food-ordering:v1
 
                         echo "Pushing food-ordering image to Nexus..."
-                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086_Food-ordering/Food-ordering:v1
+                        docker push nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/2401086_food-ordering/food-ordering:v1
                     '''
                 }
             }
