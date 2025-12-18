@@ -343,7 +343,7 @@ spec:
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Restart Kubernetes Deployment') {
             steps {
                 container('kubectl') {
                     sh '''
