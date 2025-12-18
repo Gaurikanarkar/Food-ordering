@@ -325,43 +325,40 @@ spec:
             }
         }
 
-        stage('Deploy to Kubernetes') {
-            steps {
-                container('kubectl') {
-                    dir('k8s') {
-                        sh '''
-                            echo "Deploying food-ordering application to Kubernetes..."
+    stage('Deploy to Kubernetes') {
+    steps {
+        container('kubectl') {
+            dir('k8s') {
+                sh '''
+                    echo "Deploying food-ordering application to Kubernetes..."
 
-                            kubectl apply -f deployment.yaml -n 2401086
-                            kubectl apply -f service.yaml -n 2401086
-
-                            kubectl rollout status deployment/food-ordering-frontend-deployment \
-                              -n 2401086 --timeout=120s
-                        '''
-                        
-                    }
-                }
+                    kubectl apply -f deployment.yaml -n 2401086
+                    kubectl apply -f service.yaml -n 2401086
+                '''
             }
         }
+    }
+}
 
-        stage('Restart Kubernetes Deployment') {
-            steps {
-                container('kubectl') {
-                    sh '''
-                        echo "Restarting deployment cleanly..."
+stage('Restart Kubernetes Deployment') {
+    steps {
+        container('kubectl') {
+            sh '''
+                echo "Restarting deployment cleanly..."
 
-                        kubectl rollout restart deployment food-ordering-frontend-deployment -n 2401086
+                kubectl rollout restart deployment food-ordering-frontend-deployment -n 2401086
 
-                        kubectl rollout status deployment food-ordering-frontend-deployment \
-                          -n 2401086 --timeout=300s
+                kubectl rollout status deployment food-ordering-frontend-deployment \
+                  -n 2401086 --timeout=300s
 
-                        echo "Pod status:"
-                        kubectl get pods -n 2401086
-                    '''
-                }
-            }
+                echo "Pod status:"
+                kubectl get pods -n 2401086
+            '''
         }
-        stage('Debug Kubernetes Pods') {
+    }
+}
+
+stage('Debug Kubernetes Pods') {
     steps {
         container('kubectl') {
             sh '''
@@ -374,5 +371,6 @@ spec:
         }
     }
     }
+    
     }
 }
