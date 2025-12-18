@@ -70,8 +70,11 @@ spec:
       steps {
         container('dind') {
           sh '''
-            echo "Waiting for Docker daemon..."
-            sleep 15
+            until docker info >/dev/null 2>&1; do
+              echo "Waiting for Docker daemon..."
+              sleep 2
+            done
+
             docker version
             docker build -t ${APP_NAME}:${IMAGE_TAG} .
             docker images
@@ -79,6 +82,7 @@ spec:
         }
       }
     }
+
 
     stage('SonarQube Analysis') {
       steps {
