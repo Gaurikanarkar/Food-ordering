@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    environment {
+        REGISTRY = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+        IMAGE = "my-repository/2401086_food-ordering/food-ordering:v1"
+    }
+
     stages {
 
         stage('Build Docker Image') {
@@ -26,7 +31,7 @@ pipeline {
         stage('Tag Image for Nexus') {
             steps {
                 sh '''
-                docker tag food-ordering:v1 nexus.imcc.com:8083/my-repository/2401086_food-ordering/food-ordering:v1
+                docker tag food-ordering:v1 ${REGISTRY}/${IMAGE}
                 '''
             }
         }
@@ -34,7 +39,7 @@ pipeline {
         stage('Login to Nexus') {
             steps {
                 sh '''
-                docker login nexus.imcc.com:8083 -u admin -p Changeme@2025
+                docker login ${REGISTRY} -u admin -p Changeme@2025
                 '''
             }
         }
@@ -42,7 +47,7 @@ pipeline {
         stage('Push Image to Nexus') {
             steps {
                 sh '''
-                docker push nexus.imcc.com:8083/my-repository/2401086_food-ordering/food-ordering:v1
+                docker push ${REGISTRY}/${IMAGE}
                 '''
             }
         }
@@ -50,8 +55,8 @@ pipeline {
         stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                kubectl apply -f deployment.yaml
-                kubectl apply -f service.yaml
+                kubectl apply -f k8s/deployment.yaml
+                kubectl apply -f k8s/service.yaml
                 '''
             }
         }

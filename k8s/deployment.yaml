@@ -1,19 +1,19 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: food-website-deployment
+  name: food-ordering-deployment
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: food-website
+      app: food-ordering
   template:
     metadata:
       labels:
-        app: food-website
+        app: food-ordering
     spec:
       containers:
-        - name: food-website
-          image: nexus.imcc.com:8083/my-repository/2401086_food-ordering/food-ordering:v1
+        - name: food-ordering
+          image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/2401086_food-ordering/food-ordering:v1
           ports:
             - containerPort: 80
