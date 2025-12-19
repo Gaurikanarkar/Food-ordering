@@ -103,11 +103,15 @@ spec:
       steps {
         container('dind') {
           sh '''
-            docker login ${REGISTRY_URL} -u admin -p Changeme@2025
+            echo "Logging into Nexus Docker registry"
+            echo "Changeme@2025" | docker login ${REGISTRY_URL} \
+              -u admin \
+              --password-stdin
           '''
         }
       }
     }
+
 
     stage('Tag & Push Image to Nexus') {
       steps {
