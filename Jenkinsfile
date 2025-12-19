@@ -24,6 +24,9 @@ spec:
     volumeMounts:
       - name: docker-storage
         mountPath: /var/lib/docker
+      - name: docker-config
+        mountPath: /etc/docker/daemon.json
+        subPath: daemon.json
       - name: workspace-volume
         mountPath: /home/jenkins/agent
 
@@ -57,6 +60,9 @@ spec:
     - name: kubeconfig-secret
       secret:
         secretName: kubeconfig-secret
+    - name: docker-config
+      configMap:
+        name: docker-daemon-config
 '''
     }
   }
@@ -83,7 +89,7 @@ spec:
       steps {
         container('dind') {
           sh '''
-            echo "Running sanity check..."
+            echo "Sanity check"
             whoami
             pwd
             ls -la
@@ -126,7 +132,7 @@ spec:
       }
     }
 
-    stage('Login to Nexus') {
+    stage('Login to Nexus (HTTP)') {
       steps {
         container('dind') {
           sh '''
