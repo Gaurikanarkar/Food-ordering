@@ -125,7 +125,8 @@ spec:
       steps {
         container('dind') {
           sh '''
-            echo "Changeme@2025" | docker login ${REGISTRY_URL} \
+            echo "Logging into Nexus over HTTP"
+            echo "Changeme@2025" | docker login http://${REGISTRY_URL} \
               -u admin \
               --password-stdin
           '''
