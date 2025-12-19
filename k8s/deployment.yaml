@@ -27,7 +27,7 @@ spec:
           imagePullPolicy: Always
 
           ports:
-            - containerPort: 8000
+            - containerPort: 80
 
           # Static frontend → no DB envs needed
           env:
