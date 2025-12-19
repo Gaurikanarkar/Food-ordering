@@ -58,7 +58,7 @@ spec:
     IMAGE_TAG     = "v1"
 
     REGISTRY_URL  = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
-    REGISTRY_REPO = "my-repository/2401086_food-ordering"
+    REGISTRY_REPO = "2401086"
 
     SONAR_PROJECT = "food-ordering"
     SONAR_HOST_URL = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
