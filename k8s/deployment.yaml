@@ -1,46 +1,8 @@
-# apiVersion: apps/v1
-# kind: Deployment
-# metadata:
-#   name: food-ordering-deployment
-#   namespace: "2401086"
-# spec:
-#   replicas: 1
-#   selector:
-#     matchLabels:
-#       app: food-ordering
-#   template:
-#     metadata:
-#       labels:
-#         app: food-ordering
-#     spec:
-#       imagePullSecrets:
-#         - name: nexus-secret
-#       containers:
-#         - name: food-ordering
-#           image: 120.0.0.1:30085/2401086/food-ordering:v1
-#           ports:
-#             - containerPort: 80
-# ---
-# apiVersion: v1
-# kind: Service
-# metadata:
-#   name: food-ordering-service
-#   namespace: "2401086"
-# spec:
-#   type: NodePort
-#   selector:
-#     app: food-ordering
-#   ports:
-#     - protocol: TCP
-#       port: 80
-#       targetPort: 80
-#       nodePort: 31086
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: food-ordering-frontend-deployment
-  namespace: "2401086"
+  name: food-ordering-deployment
+  namespace: 2401086
 spec:
   replicas: 1
   selector:
@@ -51,20 +13,11 @@ spec:
       labels:
         app: food-ordering
     spec:
-      automountServiceAccountToken: false
       imagePullSecrets:
         - name: nexus-secret
       containers:
         - name: food-ordering
-          image: 127.0.0.1:30085/2401086_food/food-ordering:v1
+          image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/2401086_food_ordering/food-ordering:v1
           imagePullPolicy: Always
           ports:
             - containerPort: 80
-          resources:
-            requests:
-              cpu: "100m"
-              memory: "256Mi"
-              ephemeral-storage: "256Mi"
-            limits:
-              cpu: "500m"
-              memory: "512Mi"
