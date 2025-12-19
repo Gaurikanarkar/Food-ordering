@@ -23,7 +23,7 @@ spec:
 
       containers:
         - name: food-ordering
-          image: nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085/my-repository/2401086_food-ordering/food-ordering:v1
+          image: 127.0.0.1:30085/2401086_food-ordering/food-ordering:v1
 
           ports:
             - containerPort: 80
