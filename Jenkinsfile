@@ -9,6 +9,7 @@ spec:
 
   - name: dind
     image: docker:24.0-dind
+    workingDir: /home/jenkins/agent
     securityContext:
       privileged: true
     command: ["/bin/sh", "-c", "dockerd-entrypoint.sh"]
@@ -23,24 +24,21 @@ spec:
     volumeMounts:
       - name: docker-storage
         mountPath: /var/lib/docker
-      - name: docker-config
-        mountPath: /etc/docker/daemon.json
-        subPath: daemon.json
       - name: workspace-volume
         mountPath: /home/jenkins/agent
 
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
+    workingDir: /home/jenkins/agent
     command: ["/bin/sh", "-c", "sleep infinity"]
-    tty: true
     volumeMounts:
       - name: workspace-volume
         mountPath: /home/jenkins/agent
 
   - name: kubectl
     image: bitnami/kubectl:latest
+    workingDir: /home/jenkins/agent
     command: ["/bin/sh", "-c", "sleep infinity"]
-    tty: true
     env:
       - name: KUBECONFIG
         value: /kube/config
@@ -59,9 +57,6 @@ spec:
     - name: kubeconfig-secret
       secret:
         secretName: kubeconfig-secret
-    - name: docker-config
-      configMap:
-        name: docker-daemon-config
 '''
     }
   }
@@ -88,7 +83,7 @@ spec:
       steps {
         container('dind') {
           sh '''
-            echo "Running on:"
+            echo "Running sanity check..."
             whoami
             pwd
             ls -la
@@ -131,11 +126,11 @@ spec:
       }
     }
 
-    stage('Login to Nexus (HTTP)') {
+    stage('Login to Nexus') {
       steps {
         container('dind') {
           sh '''
-            echo "Logging into Nexus (HTTP)"
+            echo "Logging into Nexus over HTTP"
             echo "Changeme@2025" | docker login http://${REGISTRY_URL} \
               -u admin \
               --password-stdin
