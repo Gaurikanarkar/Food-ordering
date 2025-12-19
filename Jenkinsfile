@@ -31,7 +31,7 @@ spec:
 
   # kubectl for deployment
   - name: kubectl
-    image: bitnami/kubectl:1.29.0
+    image: bitnami/kubectl:latest
     command: ["cat"]
     tty: true
     env:
