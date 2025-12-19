@@ -7,55 +7,66 @@ kind: Pod
 spec:
   containers:
 
-  # Docker-in-Docker (build & push)
   - name: dind
     image: docker:24.0-dind
     securityContext:
       privileged: true
+    command: ["/bin/sh", "-c", "sleep infinity"]
     env:
-    - name: DOCKER_TLS_CERTDIR
-      value: ""
+      - name: DOCKER_TLS_CERTDIR
+        value: ""
     args:
       - "--host=tcp://0.0.0.0:2375"
       - "--storage-driver=overlay2"
       - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     volumeMounts:
-    - name: docker-storage
-      mountPath: /var/lib/docker
+      - name: docker-storage
+        mountPath: /var/lib/docker
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
 
-  # SonarQube scanner
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
-    command: ["cat"]
+    command: ["/bin/sh", "-c", "sleep infinity"]
     tty: true
+    volumeMounts:
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
 
-  # kubectl for deployment
   - name: kubectl
     image: bitnami/kubectl:latest
-    command: ["cat"]
+    command: ["/bin/sh", "-c", "sleep infinity"]
     tty: true
     env:
-    - name: KUBECONFIG
-      value: /kube/config
+      - name: KUBECONFIG
+        value: /kube/config
     volumeMounts:
-    - name: kubeconfig-secret
-      mountPath: /kube/config
-      subPath: kubeconfig
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+      - name: kubeconfig-secret
+        mountPath: /kube/config
+        subPath: kubeconfig
 
   volumes:
-  - name: docker-storage
-    emptyDir: {}
-
-  - name: kubeconfig-secret
-    secret:
-      secretName: kubeconfig-secret
+    - name: docker-storage
+      emptyDir: {}
+    - name: workspace-volume
+      emptyDir: {}
+    - name: kubeconfig-secret
+      secret:
+        secretName: kubeconfig-secret
 '''
     }
+  }
+
+  options {
+    durabilityHint('MAX_SURVIVABILITY')
   }
 
   environment {
     APP_NAME      = "food-ordering"
     IMAGE_TAG     = "v1"
+    NAMESPACE     = "2401086"
 
     REGISTRY_URL  = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     REGISTRY_REPO = "2401086"
@@ -65,6 +76,18 @@ spec:
   }
 
   stages {
+
+    stage('Agent Sanity Check') {
+      steps {
+        container('dind') {
+          sh '''
+            whoami
+            pwd
+            ls -la
+          '''
+        }
+      }
+    }
 
     stage('Build Docker Image') {
       steps {
@@ -77,12 +100,10 @@ spec:
 
             docker version
             docker build -t ${APP_NAME}:${IMAGE_TAG} .
-            docker images
           '''
         }
       }
     }
-
 
     stage('SonarQube Analysis') {
       steps {
@@ -98,12 +119,10 @@ spec:
       }
     }
 
-
-    stage('Login to Nexus Registry') {
+    stage('Login to Nexus') {
       steps {
         container('dind') {
           sh '''
-            echo "Logging into Nexus Docker registry"
             echo "Changeme@2025" | docker login ${REGISTRY_URL} \
               -u admin \
               --password-stdin
@@ -112,8 +131,7 @@ spec:
       }
     }
 
-
-    stage('Tag & Push Image to Nexus') {
+    stage('Tag & Push Image') {
       steps {
         container('dind') {
           sh '''
@@ -121,7 +139,6 @@ spec:
               ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:${IMAGE_TAG}
 
             docker push ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:${IMAGE_TAG}
-            docker images
           '''
         }
       }
@@ -130,10 +147,10 @@ spec:
     stage('Deploy Application') {
       steps {
         container('kubectl') {
-          sh '''            
-            kubectl apply -f k8s/deployment.yaml
-            kubectl apply -f k8s/service.yaml
-            kubectl rollout status deployment/food-ordering-deployment -n 2401086
+          sh '''
+            kubectl apply -f k8s/deployment.yaml -n ${NAMESPACE}
+            kubectl apply -f k8s/service.yaml -n ${NAMESPACE}
+            kubectl rollout status deployment/food-ordering-deployment -n ${NAMESPACE}
           '''
         }
       }
