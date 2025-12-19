@@ -130,13 +130,10 @@ spec:
     stage('Deploy Application') {
       steps {
         container('kubectl') {
-          sh '''
-            echo "Shell test"
-            which sh || true
-            kubectl version --client
-
+          sh '''            
             kubectl apply -f k8s/deployment.yaml
-            kubectl rollout status deployment/food-ordering-deployment -n food-ordering
+            kubectl apply -f k8s/service.yaml
+            kubectl rollout status deployment/food-ordering-deployment -n 2401086
           '''
         }
       }
