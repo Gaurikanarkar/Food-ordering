@@ -8,25 +8,27 @@ spec:
   containers:
 
   - name: dind
-  image: docker:24.0-dind
-  workingDir: /home/jenkins/agent
-  securityContext:
-    privileged: true
-  command: ["dockerd-entrypoint.sh"]
-  args:
-    - "--host=tcp://0.0.0.0:2375"
-    - "--storage-driver=overlay2"
-    - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
-  env:
-    - name: DOCKER_TLS_CERTDIR
-      value: ""
-    - name: DOCKER_HOST
-      value: tcp://localhost:2375
-  volumeMounts:
-    - name: docker-storage
-      mountPath: /var/lib/docker
-    - name: workspace-volume
-      mountPath: /home/jenkins/agent
+    image: docker:24.0-dind
+    workingDir: /home/jenkins/agent
+    securityContext:
+      privileged: true
+    command: ["/bin/sh", "-c", "dockerd-entrypoint.sh"]
+    args:
+      - "--host=tcp://0.0.0.0:2375"
+      - "--storage-driver=overlay2"
+    env:
+      - name: DOCKER_TLS_CERTDIR
+        value: ""
+      - name: DOCKER_HOST
+        value: tcp://localhost:2375
+    volumeMounts:
+      - name: docker-storage
+        mountPath: /var/lib/docker
+      - name: docker-config
+        mountPath: /etc/docker/daemon.json
+        subPath: daemon.json
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
 
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
@@ -39,18 +41,16 @@ spec:
   - name: kubectl
     image: bitnami/kubectl:latest
     workingDir: /home/jenkins/agent
-    command: ["cat"]
-    tty: true
-    securityContext:
-      runAsUser: 0
-      readOnlyRootFilesystem: false
+    command: ["/bin/sh", "-c", "sleep infinity"]
+    env:
+      - name: KUBECONFIG
+        value: /kube/config
     volumeMounts:
       - name: workspace-volume
         mountPath: /home/jenkins/agent
       - name: kubeconfig-secret
         mountPath: /kube/config
         subPath: kubeconfig
-
 
   volumes:
     - name: docker-storage
