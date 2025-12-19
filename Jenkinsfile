@@ -105,7 +105,7 @@ spec:
           sh '''
             docker login ${REGISTRY_URL} \
               -u admin \
-              -p Changeme@2025
+              -p Changeme@2025-stdin
           '''
         }
       }
