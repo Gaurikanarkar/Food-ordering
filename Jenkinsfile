@@ -15,7 +15,6 @@ spec:
     args:
       - "--host=tcp://0.0.0.0:2375"
       - "--storage-driver=overlay2"
-      - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     env:
       - name: DOCKER_TLS_CERTDIR
         value: ""
@@ -24,6 +23,9 @@ spec:
     volumeMounts:
       - name: docker-storage
         mountPath: /var/lib/docker
+      - name: docker-config
+        mountPath: /etc/docker/daemon.json
+        subPath: daemon.json
       - name: workspace-volume
         mountPath: /home/jenkins/agent
 
@@ -57,6 +59,9 @@ spec:
     - name: kubeconfig-secret
       secret:
         secretName: kubeconfig-secret
+    - name: docker-config
+      configMap:
+        name: docker-daemon-config
 '''
     }
   }
@@ -83,6 +88,7 @@ spec:
       steps {
         container('dind') {
           sh '''
+            echo "Running on:"
             whoami
             pwd
             ls -la
@@ -95,8 +101,12 @@ spec:
       steps {
         container('dind') {
           sh '''
-            until docker info >/dev/null 2>&1; do
-              echo "Waiting for Docker daemon..."
+            echo "Waiting for Docker daemon (max 60s)..."
+            for i in $(seq 1 30); do
+              if docker info >/dev/null 2>&1; then
+                echo "Docker is ready"
+                break
+              fi
               sleep 2
             done
 
@@ -121,11 +131,11 @@ spec:
       }
     }
 
-    stage('Login to Nexus') {
+    stage('Login to Nexus (HTTP)') {
       steps {
         container('dind') {
           sh '''
-            echo "Logging into Nexus over HTTP"
+            echo "Logging into Nexus (HTTP)"
             echo "Changeme@2025" | docker login http://${REGISTRY_URL} \
               -u admin \
               --password-stdin
