@@ -18,5 +18,7 @@ spec:
       containers:
         - name: food-ordering
           image: 127.0.0.1:30085/2401086/food-ordering:v1
+          imagePullSecrets:
+            - name: nexus-secret
           ports:
             - containerPort: 80
