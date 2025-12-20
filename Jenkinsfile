@@ -146,7 +146,8 @@ spec:
           sh '''
             kubectl apply -f k8s/deployment.yaml 
             kubectl apply -f k8s/service.yaml 
-            kubectl rollout status deployment/food-ordering-deployment -n ${NAMESPACE}
+            kubectl apply -f k8s/ingress.yaml 
+            kubectl rollout status deployment/food-ordering-deployment -n 2401086
           '''
         }
       }
