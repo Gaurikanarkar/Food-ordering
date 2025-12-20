@@ -73,7 +73,6 @@ spec:
 
   environment {
     APP_NAME      = "food-ordering"
-    IMAGE_TAG     = "v1"
 
     REGISTRY_URL  = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     REGISTRY_REPO = "2401086"
@@ -111,7 +110,7 @@ spec:
             done
 
             docker version
-            docker build -t ${APP_NAME}:${IMAGE_TAG} .
+            docker build -t ${APP_NAME}:latest .
           '''
         }
       }
@@ -153,7 +152,7 @@ spec:
             docker tag ${APP_NAME}:latest \
               ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:latest
 
-            docker push ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:${IMAGE_TAG}
+            docker push ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:latest
             docker images
           '''
         }
