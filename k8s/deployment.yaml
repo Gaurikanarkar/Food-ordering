@@ -1,4 +1,3 @@
-
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -15,11 +14,11 @@ spec:
         app: food-ordering
     spec:
       imagePullSecrets:
-        - name: nexus-secret  
+        - name: nexus-secret
 
       containers:
         - name: food-ordering
-          image: 127.0.0.1:30085/2401086_food/food-ordering:v1
+          image: 127.0.0.1:30085/2401086_food/food-ordering:latest
           imagePullPolicy: Always
 
           ports:

@@ -55,7 +55,6 @@ spec:
 
   environment {
     APP_NAME      = "food-ordering"
-    IMAGE_TAG     = "v1"
 
     REGISTRY_URL  = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     REGISTRY_REPO = "2401086"
@@ -99,28 +98,26 @@ spec:
     }
 
 
-    stage('Login to Nexus Registry') {
+    stage('Login to Docker Registry') {
       steps {
         container('dind') {
-          sh '''
-            echo "Logging into Nexus Docker registry"
-            echo "Changeme@2025" | docker login ${REGISTRY_URL} \
-              -u admin \
-              --password-stdin
-          '''
+          sh 'docker --version'
+          sh 'sleep 10'
+          sh 'docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025'
         }
       }
     }
+
 
 
     stage('Tag & Push Image to Nexus') {
       steps {
         container('dind') {
           sh '''
-            docker tag ${APP_NAME}:${IMAGE_TAG} \
-              ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:${IMAGE_TAG}
+            docker tag ${APP_NAME}:latest \
+              ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:latest
 
-            docker push ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:${IMAGE_TAG}
+            docker push ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:latest
             docker images
           '''
         }
