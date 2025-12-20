@@ -7,54 +7,73 @@ kind: Pod
 spec:
   containers:
 
-  # Docker-in-Docker (build & push)
   - name: dind
     image: docker:24.0-dind
+    workingDir: /home/jenkins/agent
     securityContext:
       privileged: true
-    env:
-    - name: DOCKER_TLS_CERTDIR
-      value: ""
+    command: ["/bin/sh", "-c", "dockerd-entrypoint.sh"]
     args:
       - "--host=tcp://0.0.0.0:2375"
       - "--storage-driver=overlay2"
-      - "--insecure-registry=nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
+    env:
+      - name: DOCKER_TLS_CERTDIR
+        value: ""
+      - name: DOCKER_HOST
+        value: tcp://localhost:2375
     volumeMounts:
-    - name: docker-storage
-      mountPath: /var/lib/docker
+      - name: docker-storage
+        mountPath: /var/lib/docker
+      - name: docker-config
+        mountPath: /etc/docker/daemon.json
+        subPath: daemon.json
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
 
-  # SonarQube scanner
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
-    command: ["cat"]
-    tty: true
+    workingDir: /home/jenkins/agent
+    command: ["/bin/sh", "-c", "sleep infinity"]
+    volumeMounts:
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
 
-  # kubectl for deployment
   - name: kubectl
     image: bitnami/kubectl:latest
-    command: ["cat"]
-    tty: true
+    workingDir: /home/jenkins/agent
+    command: ["/bin/sh", "-c", "sleep infinity"]
     env:
-    - name: KUBECONFIG
-      value: /kube/config
+      - name: KUBECONFIG
+        value: /kube/config
     volumeMounts:
-    - name: kubeconfig-secret
-      mountPath: /kube/config
-      subPath: kubeconfig
+      - name: workspace-volume
+        mountPath: /home/jenkins/agent
+      - name: kubeconfig-secret
+        mountPath: /kube/config
+        subPath: kubeconfig
 
   volumes:
-  - name: docker-storage
-    emptyDir: {}
-
-  - name: kubeconfig-secret
-    secret:
-      secretName: kubeconfig-secret
+    - name: docker-storage
+      emptyDir: {}
+    - name: workspace-volume
+      emptyDir: {}
+    - name: kubeconfig-secret
+      secret:
+        secretName: kubeconfig-secret
+    - name: docker-config
+      configMap:
+        name: docker-daemon-config
 '''
     }
   }
 
+  options {
+    durabilityHint('MAX_SURVIVABILITY')
+  }
+
   environment {
     APP_NAME      = "food-ordering"
+    IMAGE_TAG     = "v1"
 
     REGISTRY_URL  = "nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085"
     REGISTRY_REPO = "2401086"
@@ -65,23 +84,38 @@ spec:
 
   stages {
 
-    stage('Build Docker Image') {
+    stage('Agent Sanity Check') {
       steps {
         container('dind') {
           sh '''
-            until docker info >/dev/null 2>&1; do
-              echo "Waiting for Docker daemon..."
-              sleep 2
-            done
-
-            docker version
-            docker build -t ${APP_NAME}:${IMAGE_TAG} .
-            docker images
+            echo "Sanity check"
+            whoami
+            pwd
+            ls -la
           '''
         }
       }
     }
 
+    stage('Build Docker Image') {
+      steps {
+        container('dind') {
+          sh '''
+            echo "Waiting for Docker daemon (max 60s)..."
+            for i in $(seq 1 30); do
+              if docker info >/dev/null 2>&1; then
+                echo "Docker is ready"
+                break
+              fi
+              sleep 2
+            done
+
+            docker version
+            docker build -t ${APP_NAME}:${IMAGE_TAG} .
+          '''
+        }
+      }
+    }
 
     stage('SonarQube Analysis') {
       steps {
@@ -98,26 +132,28 @@ spec:
     }
 
 
-    stage('Login to Docker Registry') {
+    stage('Login to Nexus Registry') {
       steps {
         container('dind') {
-          sh 'docker --version'
-          sh 'sleep 10'
-          sh 'docker login nexus-service-for-docker-hosted-registry.nexus.svc.cluster.local:8085 -u admin -p Changeme@2025'
+          sh '''
+            echo "Logging into Nexus Docker registry"
+            echo "Changeme@2025" | docker login ${REGISTRY_URL} \
+              -u admin \
+              --password-stdin
+          '''
         }
       }
     }
 
 
-
-    stage('Tag & Push Image to Nexus') {
+    stage('Tag & Push Image') {
       steps {
         container('dind') {
           sh '''
             docker tag ${APP_NAME}:latest \
               ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:latest
 
-            docker push ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:latest
+            docker push ${REGISTRY_URL}/${REGISTRY_REPO}/${APP_NAME}:${IMAGE_TAG}
             docker images
           '''
         }
@@ -127,10 +163,10 @@ spec:
     stage('Deploy Application') {
       steps {
         container('kubectl') {
-          sh '''            
-            kubectl apply -f k8s/deployment.yaml
-            kubectl apply -f k8s/service.yaml
-            kubectl rollout status deployment/food-ordering-deployment -n 2401086
+          sh '''
+            kubectl apply -f k8s/deployment.yaml -n ${NAMESPACE}
+            kubectl apply -f k8s/service.yaml -n ${NAMESPACE}
+            kubectl rollout status deployment/food-ordering-deployment -n ${NAMESPACE}
           '''
         }
       }
