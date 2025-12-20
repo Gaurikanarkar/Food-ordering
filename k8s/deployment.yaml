@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: food-ordering-deployment
-  namespace: 2401086
+  namespace: "2401086"
 spec:
   replicas: 1
   selector:
