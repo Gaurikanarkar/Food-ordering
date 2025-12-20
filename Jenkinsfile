@@ -58,6 +58,8 @@ spec:
 
     SONAR_PROJECT = "food-ordering"
     SONAR_HOST_URL = "http://my-sonarqube-sonarqube.sonarqube.svc.cluster.local:9000"
+
+    NAMESPACE = "2401086"
   }
 
   stages {
