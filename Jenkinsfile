@@ -142,8 +142,8 @@ spec:
       steps {
         container('kubectl') {
           sh '''
-            kubectl apply -f k8s/deployment.yaml -n ${NAMESPACE}
-            kubectl apply -f k8s/service.yaml -n ${NAMESPACE}
+            kubectl apply -f k8s/deployment.yaml 
+            kubectl apply -f k8s/service.yaml 
             kubectl rollout status deployment/food-ordering-deployment -n ${NAMESPACE}
           '''
         }
