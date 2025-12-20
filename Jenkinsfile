@@ -1,78 +1,54 @@
 pipeline {
-  agent {
-    kubernetes {
-      yaml '''
+    agent {
+        kubernetes {
+            yaml '''
 apiVersion: v1
 kind: Pod
 spec:
   containers:
-
-  - name: dind
-    image: docker:24.0-dind
-    workingDir: /home/jenkins/agent
-    tty: true
-    securityContext:
-      privileged: true
-    command: ["/bin/sh", "-c", "dockerd-entrypoint.sh"]
-    args:
-      - "--host=tcp://0.0.0.0:2375"
-      - "--storage-driver=overlay2"
-    env:
-      - name: DOCKER_TLS_CERTDIR
-        value: ""
-      - name: DOCKER_HOST
-        value: tcp://localhost:2375
-    volumeMounts:
-      - name: docker-storage
-        mountPath: /var/lib/docker
-      - name: docker-config
-        mountPath: /etc/docker/daemon.json
-        subPath: daemon.json
-      - name: workspace-volume
-        mountPath: /home/jenkins/agent
-
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
-    workingDir: /home/jenkins/agent
+    command: ["cat"]
     tty: true
-    command: ["/bin/sh", "-c", "sleep infinity"]
-    volumeMounts:
-      - name: workspace-volume
-        mountPath: /home/jenkins/agent
 
   - name: kubectl
     image: bitnami/kubectl:latest
-    workingDir: /home/jenkins/agent
+    command: ["cat"]
     tty: true
-    command: ["/bin/sh", "-c", "sleep infinity"]
+    securityContext:
+      runAsUser: 0
+      readOnlyRootFilesystem: false
     env:
-      - name: KUBECONFIG
-        value: /kube/config
+    - name: KUBECONFIG
+      value: /kube/config
     volumeMounts:
-      - name: workspace-volume
-        mountPath: /home/jenkins/agent
-      - name: kubeconfig-secret
-        mountPath: /kube/config
-        subPath: kubeconfig
+    - name: kubeconfig-secret
+      mountPath: /kube/config
+      subPath: kubeconfig
+
+  - name: dind
+    image: docker:dind
+    securityContext:
+      privileged: true
+    env:
+    - name: DOCKER_TLS_CERTDIR
+      value: ""
+    volumeMounts:
+    - name: docker-config
+      mountPath: /etc/docker/daemon.json
+      subPath: daemon.json
 
   volumes:
-    - name: docker-storage
-      emptyDir: {}
-    - name: workspace-volume
-      emptyDir: {}
-    - name: kubeconfig-secret
-      secret:
-        secretName: kubeconfig-secret
-    - name: docker-config
-      configMap:
-        name: docker-daemon-config
+  - name: docker-config
+    configMap:
+      name: docker-daemon-config
+  - name: kubeconfig-secret
+    secret:
+      secretName: kubeconfig-secret
 '''
+        }
     }
-  }
 
-  options {
-    durabilityHint('MAX_SURVIVABILITY')
-  }
 
   environment {
     APP_NAME      = "food-ordering"
