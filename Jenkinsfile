@@ -10,6 +10,7 @@ spec:
   - name: dind
     image: docker:24.0-dind
     workingDir: /home/jenkins/agent
+    tty: true
     securityContext:
       privileged: true
     command: ["/bin/sh", "-c", "dockerd-entrypoint.sh"]
@@ -33,6 +34,7 @@ spec:
   - name: sonar-scanner
     image: sonarsource/sonar-scanner-cli
     workingDir: /home/jenkins/agent
+    tty: true
     command: ["/bin/sh", "-c", "sleep infinity"]
     volumeMounts:
       - name: workspace-volume
@@ -41,6 +43,7 @@ spec:
   - name: kubectl
     image: bitnami/kubectl:latest
     workingDir: /home/jenkins/agent
+    tty: true
     command: ["/bin/sh", "-c", "sleep infinity"]
     env:
       - name: KUBECONFIG
