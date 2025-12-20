@@ -158,10 +158,14 @@ spec:
       }
     }
 
-    stage('Deploy to Kubernetes') {
+    stage('Deploy Application') {
       steps {
-        container('dind') {
-          sh 'kubectl set image deployment/food-ordering-deployment food-ordering=127.0.0.1:30085/2401086/food-ordering:v1 -n 2401086'
+        container('kubectl') {
+          sh '''
+            kubectl apply -f k8s/deployment.yaml -n ${NAMESPACE}
+            kubectl apply -f k8s/service.yaml -n ${NAMESPACE}
+            kubectl rollout status deployment/food-ordering-deployment -n ${NAMESPACE}
+          '''
         }
       }
     }
